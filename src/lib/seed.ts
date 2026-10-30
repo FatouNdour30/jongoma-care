@@ -118,6 +118,17 @@ export function creerBaseDemo(): Base {
     };
     beneficiaires.push(b);
 
+    // Données simulées : le risque de manquer un rendez-vous augmente avec la distance et les absences
+    // précédentes (facteurs décrits dans la littérature), pour que le modèle d'apprentissage ait un signal
+    // à retrouver. Un seul tirage par rendez-vous, comme avant.
+    let manquesAnterieurs = 0;
+    const statutPasse = (base: number) => {
+      const p = Math.min(0.85, Math.max(0.03, base * (0.45 + (b.distanceKm ?? 0) / 10) + 0.18 * Math.min(manquesAnterieurs, 2)));
+      const manque = r() < p;
+      if (manque) manquesAnterieurs++;
+      return manque ? ("manque" as const) : ("honore" as const);
+    };
+
     // Consultations prénatales : passées (honorées ou manquées) et prochaine prévue.
     let prochaine = false;
     for (const semaine of CALENDRIER_CPN) {
@@ -133,7 +144,7 @@ export function creerBaseDemo(): Base {
         type: "CPN",
         libelle: `Consultation prénatale (${semaine} SA)`,
         date,
-        statut: passe ? (r() < 0.78 ? "honore" : "manque") : "prevu",
+        statut: passe ? statutPasse(0.16) : "prevu",
         confirmeParStructure: passe || r() < 0.6,
       });
     }
@@ -148,7 +159,7 @@ export function creerBaseDemo(): Base {
           type: "CPoN",
           libelle: c.libelle,
           date,
-          statut: passe ? (r() < 0.7 ? "honore" : "manque") : "prevu",
+          statut: passe ? statutPasse(0.22) : "prevu",
           confirmeParStructure: passe || r() < 0.5,
         });
         if (!passe) break;
