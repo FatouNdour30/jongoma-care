@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { db, enregistrer, newId, reinitialiser, synchroniser } from "./db";
+import { db, ecritureTerminee, enregistrer, newId, reinitialiser, synchroniser } from "./db";
 import { addDays, CALENDRIER_CPN, CALENDRIER_CPON, diffDays, ETAPES, today } from "./protocol";
 import { COOKIE_LANGUE } from "./langue";
 import { ACTIONS } from "./programmes";
@@ -68,6 +68,7 @@ export async function seConnecter(f: FormData) {
   effacerEchecs(identifiant);
   compte.derniereConnexion = new Date().toISOString();
   enregistrer(`${compte.role}:${compte.refId}`, "connexion", compte.id);
+  await ecritureTerminee();
   await setSession({ role: compte.role, id: compte.refId, compteId: compte.id });
   redirect(ACCUEIL[compte.role]);
 }
@@ -100,6 +101,7 @@ export async function demanderAcces(f: FormData) {
     creeLe: today(),
   });
   enregistrer("public", "demande_acces", email.replace(/@.*/, "@…"));
+  await ecritureTerminee();
   redirect(`${retour}?envoye=1`);
 }
 
@@ -209,6 +211,7 @@ export async function inscrire(f: FormData) {
   const compte = { id: newId("c"), identifiant, secret: chiffrerSecret(pin), role: "beneficiaire" as const, refId: b.id, nom: base.identites.find((i) => i.id === identiteId)!.prenom, statut: "actif" as const, creeLe: today(), derniereConnexion: new Date().toISOString() };
   base.comptes.push(compte);
   enregistrer(`beneficiaire:${b.id}`, "inscription", b.id);
+  await ecritureTerminee();
   await setSession({ role: "beneficiaire", id: b.id, compteId: compte.id });
   redirect("/femme?bienvenue=1");
 }
@@ -302,6 +305,7 @@ export async function supprimerMesDonnees(f: FormData) {
     base.vaccinations = base.vaccinations.filter((v) => !bebes.has(v.bebeId));
     base.bebes = base.bebes.filter((x) => x.beneficiaireId !== b.id);
     enregistrer(`beneficiaire:${b.id}`, "suppression_donnees", b.id);
+    await ecritureTerminee();
   }
   await setSession(null);
   redirect("/femme/inscription?supprime=1");
