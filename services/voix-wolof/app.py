@@ -11,6 +11,7 @@ Il n'accepte que les appels portant le jeton VOIX_SERVICE_TOKEN (même valeur qu
 import io
 import os
 import re
+import subprocess
 import tempfile
 
 import numpy as np
@@ -100,8 +101,15 @@ async def reconnaissance(audio: UploadFile = File(...)):
     with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as f:
         f.write(donnees)
         chemin = f.name
+    # Le navigateur enregistre en WebM/Opus : conversion en WAV mono 16 kHz, le format de Whisper.
+    wav = chemin + ".wav"
     try:
-        texte = asr().transcribe_audio(chemin)
+        conversion = subprocess.run(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-i", chemin, "-ac", "1", "-ar", "16000", wav], capture_output=True)
+        if conversion.returncode != 0:
+            raise HTTPException(status_code=400, detail="Audio illisible")
+        texte = asr().transcribe_audio(wav)
     finally:
-        os.remove(chemin)  # rien n'est conservé
+        for f in (chemin, wav):  # rien n'est conservé
+            if os.path.exists(f):
+                os.remove(f)
     return {"texte": texte if isinstance(texte, str) else str(texte)}

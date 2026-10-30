@@ -9,3 +9,4 @@ torch
 transformers
 git+https://github.com/huggingface/parler-tts.git
 whosper
+peft
