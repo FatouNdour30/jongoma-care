@@ -1,0 +1,14 @@
+{
+  "name": "Agenda",
+  "short_name": "Agenda",
+  "description": "Agenda",
+  "lang": "fr",
+  "start_url": "/femme",
+  "display": "standalone",
+  "background_color": "#f4f4f5",
+  "theme_color": "#5b6472",
+  "icons": [
+    { "src": "/brand/icone-neutre-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/brand/icone-neutre-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

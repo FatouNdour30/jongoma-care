@@ -1,0 +1,10 @@
+Jongoma Care
+Copyright 2026 Jongoma Tech (Dakar, Senegal)
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Third-party models used by the optional Wolof voice service (services/voix-wolof):
+- CONCREE/Adia_TTS, Apache-2.0 (https://huggingface.co/CONCREE/Adia_TTS)
+- CAYTU/whosper-large-v2, Apache-2.0 (https://huggingface.co/CAYTU/whosper-large-v2)
+
+Illustrative photos in public/images come from Unsplash (Unsplash License); the people shown are not beneficiaries.

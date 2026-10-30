@@ -1,0 +1,11 @@
+# Service vocal wolof (prototype). Versions à figer lors du premier déploiement réel.
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+numpy
+soundfile
+torch
+transformers
+git+https://github.com/huggingface/parler-tts.git
+whosper

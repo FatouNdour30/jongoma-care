@@ -1,10 +1,10 @@
 import type { NextConfig } from "next";
 
+// Prototype entièrement dynamique (données modifiées à chaque action) :
+// Cache Components désactivé volontairement.
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
   turbopack: {
+    root: __dirname,
     rules: {
       "*.css": {
         loaders: ["@tailwindcss/turbopack"],

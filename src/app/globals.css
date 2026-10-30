@@ -1,26 +1,99 @@
 @import "tailwindcss";
 
+/* Jongoma Care, marque fille de Jongoma Tech : polices, fond crème, or et signature de la
+   maison mère, avec le vert comme couleur dominante propre au produit. Textes et boutons en vert
+   ou encre (contraste AA) ; l'or et le vert vif sont réservés aux décors. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #faf3ee;
+  --foreground: #13241f;
+  --muted: #5d6b67;
+  --card: #fffcf9;
+  --border: #e5ddd3;
+  --brand: #0f766e;
+  --brand-vif: #14a394;
+  --brand-soft: #d7f0ea;
+  --accent: #8a5d22;
+  --or: #c59757;
+  --or-clair: #e2c184;
+  --encre: #0b3b37;
+  --encre-2: #115e59;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-muted: var(--muted);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-brand: var(--brand);
+  --color-brand-vif: var(--brand-vif);
+  --color-brand-soft: var(--brand-soft);
+  --color-accent: var(--accent);
+  --color-or: var(--or);
+  --color-or-clair: var(--or-clair);
+  --color-encre: var(--encre);
+  --color-encre-2: var(--encre-2);
+  --font-sans: var(--font-texte);
+  --font-display: var(--font-titre);
+  --font-marque: var(--font-marque);
 }
 
 body {
+  overflow-x: clip;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: var(--brand-soft);
+  color: var(--encre);
+}
+
+@layer components {
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-encre-2 disabled:opacity-50;
+}
+.btn-sec {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-semibold hover:bg-background;
+}
+.btn-sm {
+  @apply px-3 py-1.5 text-xs;
+}
+.card {
+  @apply rounded-2xl border border-border bg-card p-4 sm:p-5;
+}
+.field {
+  @apply w-full rounded-xl border border-border bg-card px-3 py-2.5 text-base;
+}
+.label {
+  @apply mb-1 block text-sm font-medium;
+}
+.font-marque {
+  font-family: var(--font-marque), "Times New Roman", serif;
+}
+}
+
+/* Titres : sérif classique, comme le logo. font-size-adjust aligne la hauteur des
+   minuscules sur celle du texte courant pour rester lisible aux petites tailles. */
+@layer base {
+  h1,
+  h2 {
+    font-family: var(--font-titre), Georgia, serif;
+    font-size-adjust: 0.48;
+    letter-spacing: 0;
+  }
+
+  /* Chiffres alignés (et non elzéviriens) : indispensables dans les tableaux de bord.
+     --tw-numeric-figure se combine avec les utilitaires Tailwind (tabular-nums…), qui sinon
+     remplaceraient font-variant-numeric en entier. */
+  h1,
+  h2,
+  .font-display {
+    --tw-numeric-figure: lining-nums;
+    font-variant-numeric: lining-nums;
+  }
+
+  .font-display {
+    font-size-adjust: 0.48;
+  }
 }

@@ -1,0 +1,7 @@
+# Données locales de démonstration et artefacts de build : jamais envoyés à Vercel.
+.data
+.next
+node_modules
+tsconfig.tsbuildinfo
+.env*
+services

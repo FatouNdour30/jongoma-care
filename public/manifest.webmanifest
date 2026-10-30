@@ -1,0 +1,14 @@
+{
+  "name": "Jongoma Care by Jongoma Tech",
+  "short_name": "Jongoma Care",
+  "description": "Suivi maternel inclusif et orientation pour les femmes et les filles. Un projet Jongoma Tech.",
+  "lang": "fr",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf3ee",
+  "theme_color": "#0f766e",
+  "icons": [
+    { "src": "/brand/icone-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
