@@ -1,7 +1,8 @@
 // Modèle de données de Jongoma Care.
 // L'identité (nom, téléphone) est séparée du suivi : le suivi ne référence que l'id.
 
-export type Langue = "wo" | "fr";
+// Langue de la bénéficiaire : wolof, français, autres langues nationales du Sénégal et langues africaines (voir langues.ts).
+export type Langue = import("./langues").CodeLangue;
 export type Canal = "sms" | "appel" | "audio";
 export type Zone = "Pikine" | "Guédiawaye" | "Rufisque" | "Thiès" | "Mbour";
 
@@ -52,6 +53,10 @@ export interface Beneficiaire {
   rappelsSansReponse: number;
   // Demande de rappel laissée par l'assistant vocal quand il ne peut pas répondre (levée au prochain contact).
   rappelDemandeLe?: string;
+  // Signe de danger signalé par la mère pour elle-même après l'accouchement (date et heure) ; levé par la référente.
+  alerteMereLe?: string;
+  // Baby Guardian : proches et relais communautaires choisis par la femme, avec leur accord (3 au plus).
+  cercle?: Gardien[];
   creeLe: string;
 }
 
@@ -194,6 +199,17 @@ export interface Bebe {
   mesures?: Mesure[];
   // Visites à domicile de la référente après la naissance.
   visites?: { etape: EtapeVisite; date: string; saisiPar: string }[];
+  // First Cry : gestes des 72 premières heures cochés par la mère ou la référente.
+  premieresHeures?: string[];
+}
+
+export interface Gardien {
+  id: string;
+  prenom: string;
+  lien: "partenaire" | "mere" | "belle_mere" | "soeur" | "amie" | "bajenu_gox" | "autre";
+  telephone: string;
+  prevenirSiAlerte: boolean; // la référente peut l'appeler si la mère ne répond pas pendant une alerte
+  accordLe: string; // date à laquelle la mère confirme que la personne est d'accord
 }
 
 export type EtapeVisite = "j3" | "j7" | "s6";

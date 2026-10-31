@@ -42,6 +42,7 @@ export default async function IaEquite() {
     ...ZONES.map((z) => ({ type: "Zone", nom: z, xs: scores.filter((x) => x.b.zone === z) })),
     { type: "Langue", nom: "Wolof", xs: scores.filter((x) => x.b.langue === "wo") },
     { type: "Langue", nom: "Français", xs: scores.filter((x) => x.b.langue === "fr") },
+    { type: "Langue", nom: "Autres langues", xs: scores.filter((x) => x.b.langue !== "wo" && x.b.langue !== "fr") },
     { type: "Âge", nom: "Jeunes filles (< 20 ans)", xs: scores.filter((x) => x.b.jeuneFille) },
   ].map((g) => ({ ...g, haute: partHaute(g.xs), refus: pct(g.xs.filter((x) => x.p.iaRefusee).length, g.xs.length) }));
   const alertes = groupes.filter((g) => Math.abs(g.haute - moyenne) > ECART_ALERTE && g.xs.length >= 5);

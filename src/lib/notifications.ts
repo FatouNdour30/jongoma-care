@@ -34,8 +34,10 @@ export function notifications(s: Session, base: Base): Notification[] {
     const aVerifier = base.rendezVous.filter((r) => ids.has(r.beneficiaireId) && r.statut === "prevu" && r.date < t).length;
     const postSansRdv = mes.filter((b) => b.etape === "postnatal" && !base.rendezVous.some((r) => r.beneficiaireId === b.id && r.type === "CPoN" && r.statut === "prevu" && r.date >= t)).length;
     const orientAttente = base.orientations.filter((o) => ids.has(o.beneficiaireId) && o.statut === "transmise" && diffDays(t, o.creeLe) > 3).length;
-    const alertesBebe = base.bebes.filter((x) => ids.has(x.beneficiaireId) && x.alerteDangerLe).length;
-    ajouter(alertesBebe, "urgent", `Signe de danger signalé pour ${pluriel(alertesBebe, "bébé")}`, "La mère a vu un signe de danger : appelez-la tout de suite.", "/personnel#liste");
+    const alertesBebe = base.bebes.filter((x) => ids.has(x.beneficiaireId) && x.alerteDangerLe).length + mes.filter((b) => b.alerteMereLe).length;
+    const premieres72h = base.bebes.filter((x) => ids.has(x.beneficiaireId) && diffDays(t, x.dateNaissance) <= 3).length;
+    ajouter(premieres72h, "important", `${pluriel(premieres72h, "nouveau-né")} de moins de 72 heures`, "First Cry : appelez la mère chaque jour et prévoyez la visite des 3 premiers jours.", "/personnel#liste");
+    ajouter(alertesBebe, "urgent", `${pluriel(alertesBebe, "signe")} de danger signalé${alertesBebe > 1 ? "s" : ""} (bébé ou maman)`, "Appelez la mère tout de suite ; si elle ne répond pas, son cercle de soutien.", "/personnel#liste");
     ajouter(hautes, "urgent", `${pluriel(hautes, "bénéficiaire")} en priorité haute`, "À rappeler aujourd'hui.", "/personnel#appels");
     const rappelsDemandes = mes.filter((b) => b.rappelDemandeLe).length;
     ajouter(rappelsDemandes, "urgent", `${pluriel(rappelsDemandes, "bénéficiaire")} demande${rappelsDemandes > 1 ? "nt" : ""} à être rappelée${rappelsDemandes > 1 ? "s" : ""}`, "Question posée à l'assistant vocal, sans réponse validée : rappelez-la.", "/personnel#liste");

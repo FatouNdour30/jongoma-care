@@ -1,3 +1,4 @@
+import { nomLangue } from "@/lib/langues";
 import Link from "next/link";
 import { Alerte, Badge, fmt, Titre } from "@/components/ui";
 import { affecter, affecterAutomatiquement, verifierStructure } from "@/lib/actions";
@@ -42,7 +43,7 @@ export default async function Affectations({ searchParams }: PageProps<"/coordin
               <div className="mt-2 h-2 rounded-full bg-stone-100">
                 <div className={`h-2 rounded-full ${pct > 90 ? "bg-accent" : "bg-brand"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
               </div>
-              <p className="mt-2 text-xs text-muted">{r.zones.join(", ")} · {r.langues.join(", ")}</p>
+              <p className="mt-2 text-xs text-muted">{r.zones.join(", ")} · {r.langues.map(nomLangue).join(", ")}</p>
             </div>
           );
         })}
@@ -62,7 +63,7 @@ export default async function Affectations({ searchParams }: PageProps<"/coordin
         <ul className="divide-y divide-border text-sm">
           {nonAffectees.map((b) => (
             <li key={b.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-              <span>{prenom(b.identiteId)} · {b.zone} · {b.langue} <span className="text-xs text-muted">inscrite le {fmt(b.creeLe)}</span></span>
+              <span>{prenom(b.identiteId)} · {b.zone} · {nomLangue(b.langue)} <span className="text-xs text-muted">inscrite le {fmt(b.creeLe)}</span></span>
               <form action={affecter} className="flex gap-2">
                 <input type="hidden" name="beneficiaireId" value={b.id} />
                 <select name="referenteId" className="field py-1.5 text-sm">

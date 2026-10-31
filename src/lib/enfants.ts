@@ -192,3 +192,38 @@ export function zonePoids(bebe: Bebe): "dans" | "dessous" | "dessus" | null {
   if (m.poidsKg! > referenceOms(bebe.sexe, "p2", mois)) return "dessus";
   return "dans";
 }
+
+// ---------- First Cry : les 72 premières heures ----------
+// Gestes essentiels du nouveau-né (inspirés des soins essentiels du nouveau-né de l'OMS), à valider.
+export const PREMIERES_HEURES = [
+  { id: "sein", moment: "1re heure", texte: "Bébé mis au sein dans l'heure qui suit la naissance" },
+  { id: "chaud", moment: "1re heure", texte: "Peau à peau, bébé séché et gardé au chaud" },
+  { id: "vaccins", moment: "Avant la sortie", texte: "BCG, polio 0 et hépatite B demandés avant de quitter la maternité" },
+  { id: "cordon", moment: "Chaque jour", texte: "Cordon propre et sec, sans rien mettre dessus" },
+  { id: "h24", moment: "24 h", texte: "Signes de danger vérifiés (bébé et maman)" },
+  { id: "h48", moment: "48 h", texte: "Signes de danger vérifiés (bébé et maman)" },
+  { id: "h72", moment: "72 h", texte: "Signes de danger vérifiés, puis visite de la référente" },
+] as const;
+export const FIRST_CRY_JOURS = 3;
+
+// Signes de danger pour la mère après l'accouchement (indicatifs, à valider) : aller tout de suite au centre de santé.
+export const SIGNES_DANGER_MERE = [
+  "Saignement abondant",
+  "Forte fièvre ou frissons",
+  "Maux de tête violents ou vue trouble",
+  "Convulsions",
+  "Difficulté à respirer",
+  "Douleur au ventre qui ne passe pas, pertes qui sentent mauvais",
+];
+
+// ---------- Baby Guardian : le cercle de soutien ----------
+export const LIENS_GARDIEN = {
+  partenaire: "Conjoint ou partenaire",
+  mere: "Mère",
+  belle_mere: "Belle-mère",
+  soeur: "Sœur",
+  amie: "Amie ou voisine",
+  bajenu_gox: "Bajenu gox (marraine de quartier)",
+  autre: "Autre proche",
+} as const;
+export const CERCLE_MAX = 3;

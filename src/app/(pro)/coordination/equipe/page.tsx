@@ -1,3 +1,4 @@
+import { nomLangue } from "@/lib/langues";
 import { Avatar, EnTete, Kpi, Panneau, ilYa } from "@/components/pro";
 import { LIBELLES } from "@/components/ui";
 import { db } from "@/lib/db";
@@ -62,7 +63,7 @@ export default async function Equipe() {
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
                       <Avatar nom={r.p.prenom} />
-                      <div><p className="font-medium">{r.p.prenom}</p><p className="text-xs text-muted">{r.p.zones.join(", ")} · {r.p.langues.join(", ")}</p></div>
+                      <div><p className="font-medium">{r.p.prenom}</p><p className="text-xs text-muted">{r.p.zones.join(", ")} · {r.p.langues.map(nomLangue).join(", ")}</p></div>
                     </div>
                   </td>
                   <td className="w-44">

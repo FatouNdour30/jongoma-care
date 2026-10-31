@@ -3,7 +3,7 @@ import { Badge, fmt } from "./ui";
 import { CourbeCroissance } from "./Croissance";
 import { declarerEtatCivil, enregistrerMesure, enregistrerNaissance, enregistrerVaccin, enregistrerVisite, leverAlerteBebe, supprimerMesure } from "@/lib/actions";
 import { db } from "@/lib/db";
-import { ageBebe, ALLAITEMENT_JOURS_MAX, etatVaccins, LIBELLE_VACCIN, MENTION_A_VALIDER, nomBebe, VACCINS, VISITES, zonePoids, type StatutVaccin } from "@/lib/enfants";
+import { ageBebe, ALLAITEMENT_JOURS_MAX, FIRST_CRY_JOURS, LIENS_GARDIEN, PREMIERES_HEURES, etatVaccins, LIBELLE_VACCIN, MENTION_A_VALIDER, nomBebe, VACCINS, VISITES, zonePoids, type StatutVaccin } from "@/lib/enfants";
 import { enRetard } from "@/lib/programmes";
 import { addDays, diffDays, today } from "@/lib/protocol";
 import type { Beneficiaire } from "@/lib/types";
@@ -65,6 +65,8 @@ export function PanneauBebe({ b, modifiable = true }: { b: Beneficiaire; modifia
       ["Allaitement exclusif", bebe.allaitement ? (bebe.allaitement.exclusif ? "oui" : "non") : diffDays(t, bebe.dateNaissance) <= ALLAITEMENT_JOURS_MAX ? "pas de réponse" : "plus de 6 mois", bebe.allaitement?.exclusif === false],
       ["État civil", bebe.etatCivilLe ? `déclarée le ${fmt(bebe.etatCivilLe)}` : "pas encore déclarée", !bebe.etatCivilLe],
       ["Visites à domicile", `${(bebe.visites ?? []).length} sur ${VISITES.length}`],
+      ["First Cry (72 h)", `${(bebe.premieresHeures ?? []).length} geste(s) sur ${PREMIERES_HEURES.length}`, diffDays(t, bebe.dateNaissance) <= FIRST_CRY_JOURS && (bebe.premieresHeures ?? []).length < PREMIERES_HEURES.length],
+      ["Cercle de soutien", (b.cercle ?? []).length ? b.cercle!.map((g) => `${g.prenom} (${LIENS_GARDIEN[g.lien].toLowerCase()})`).join(", ") : "aucun proche indiqué"],
     ]],
   ];
 
@@ -76,10 +78,14 @@ export function PanneauBebe({ b, modifiable = true }: { b: Beneficiaire; modifia
           Né(e) le {fmt(bebe.dateNaissance)} · {ageBebe(bebe.dateNaissance)} · {faits} sur {echus} vaccin(s) échu(s){retards ? <span className="font-semibold text-red-700"> · {retards} en retard</span> : ""}
         </span>
       </div>
-      {bebe.alerteDangerLe && (
+      {(bebe.alerteDangerLe || b.alerteMereLe) && (
         <div className="mb-4 rounded-xl border-2 border-red-300 bg-red-50 p-3 text-sm text-red-950">
-          <p className="font-semibold">Signe de danger signalé par la mère le {fmt(bebe.alerteDangerLe.slice(0, 10))} à {bebe.alerteDangerLe.slice(11, 16)} (UTC)</p>
+          {bebe.alerteDangerLe && <p className="font-semibold">Signe de danger signalé pour le bébé le {fmt(bebe.alerteDangerLe.slice(0, 10))} à {bebe.alerteDangerLe.slice(11, 16)} (UTC)</p>}
+          {b.alerteMereLe && <p className="font-semibold">Signe de danger signalé par la mère pour elle-même le {fmt(b.alerteMereLe.slice(0, 10))} à {b.alerteMereLe.slice(11, 16)} (UTC)</p>}
           <p className="mt-1">Appelez-la tout de suite. Si elle n&apos;est pas déjà au centre de santé, qu&apos;elle y aille sans attendre ; escaladez si besoin.</p>
+          {(b.cercle ?? []).some((g) => g.prevenirSiAlerte) && (
+            <p className="mt-1">Si elle ne répond pas, son cercle de soutien (Baby Guardian) : {b.cercle!.filter((g) => g.prevenirSiAlerte).map((g) => `${g.prenom} (${LIENS_GARDIEN[g.lien].toLowerCase()}) ${g.telephone}`).join(" · ")}.</p>
+          )}
           {modifiable && (
             <form action={leverAlerteBebe} className="mt-2">
               <input type="hidden" name="beneficiaireId" value={b.id} />

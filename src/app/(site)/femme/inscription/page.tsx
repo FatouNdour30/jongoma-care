@@ -1,3 +1,4 @@
+import { LANGUES } from "@/lib/langues";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { AuthShell, ChampIcone } from "@/components/AuthShell";
@@ -33,6 +34,10 @@ const T = {
     facultatif: "(facultatif)",
     e1: ["Votre langue", "Pour les rappels et les conseils audio."],
     langues: [["wo", "Wolof"], ["fr", "Français"]],
+    autreLangue: "Une autre langue : pulaar, seereer, joola, mandinka, soninké, bambara, haoussa…",
+    languesSenegal: "Langues du Sénégal",
+    languesAfrique: "Langues d'Afrique",
+    aideLangue: "Une référente qui parle votre langue vous accompagne quand c'est possible. Les messages audio dans votre langue sont enregistrés par des locutrices natives et vérifiés par une sage-femme ; en attendant, votre référente vous explique tout de vive voix.",
     e2: ["Ce que fait le service", "Écoutez ou lisez avant de continuer."],
     ecouter: "Écouter l'explication",
     e3: ["Votre accord", "Vous pouvez changer d'avis à tout moment."],
@@ -89,6 +94,10 @@ const T = {
     facultatif: "(optional)",
     e1: ["Your language", "For reminders and audio advice."],
     langues: [["wo", "Wolof"], ["fr", "French"]],
+    autreLangue: "Another language: Pulaar, Seereer, Joola, Mandinka, Soninke, Bambara, Hausa…",
+    languesSenegal: "Languages of Senegal",
+    languesAfrique: "Languages of Africa",
+    aideLangue: "A follow-up agent who speaks your language supports you whenever possible. Audio messages in your language are recorded by native speakers and checked by a midwife; until then, your agent explains everything in person.",
     e2: ["What the service does", "Listen or read before continuing."],
     ecouter: "Listen to the explanation",
     e3: ["Your consent", "You can change your mind at any time."],
@@ -187,6 +196,22 @@ export default async function Inscription({ searchParams }: PageProps<"/femme/in
               </label>
             ))}
           </div>
+          <details className="mt-3 text-sm">
+            <summary className="cursor-pointer text-brand underline">{t.autreLangue}</summary>
+            {(["Sénégal", "Afrique"] as const).map((region) => (
+              <fieldset key={region} className="mt-3">
+                <legend className="text-xs font-semibold uppercase tracking-wide text-muted">{region === "Sénégal" ? t.languesSenegal : t.languesAfrique}</legend>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {LANGUES.filter((x) => x.region === region && x.code !== "wo" && x.code !== "fr").map((x) => (
+                    <label key={x.code} className="cursor-pointer rounded-full px-3 py-1.5 ring-1 ring-border has-[:checked]:bg-brand-soft/40 has-[:checked]:text-brand has-[:checked]:ring-brand">
+                      <input type="radio" name="langue" value={x.code} className="sr-only" /> {x.nom}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            ))}
+            <p className="mt-3 text-xs text-muted">{t.aideLangue}</p>
+          </details>
         </Etape>
 
         <Etape n={2} titre={t.e2[0]} sous={t.e2[1]}>

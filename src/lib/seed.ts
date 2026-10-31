@@ -68,9 +68,9 @@ export function creerBaseDemo(): Base {
   });
 
   const personnel: Base["personnel"] = [
-    { id: "p1", prenom: "Awa", role: "referente", zones: ["Pikine", "Guédiawaye"], langues: ["wo", "fr"], capaciteMax: 25 },
-    { id: "p2", prenom: "Fatou", role: "referente", zones: ["Rufisque", "Pikine"], langues: ["wo"], capaciteMax: 25 },
-    { id: "p3", prenom: "Mariama", role: "referente", zones: ["Thiès", "Mbour"], langues: ["wo", "fr"], capaciteMax: 25 },
+    { id: "p1", prenom: "Awa", role: "referente", zones: ["Pikine", "Guédiawaye"], langues: ["wo", "fr", "ff"], capaciteMax: 25 },
+    { id: "p2", prenom: "Fatou", role: "referente", zones: ["Rufisque", "Pikine"], langues: ["wo", "dyo"], capaciteMax: 25 },
+    { id: "p3", prenom: "Mariama", role: "referente", zones: ["Thiès", "Mbour"], langues: ["wo", "fr", "srr"], capaciteMax: 25 },
     { id: "p4", prenom: "Aminata", role: "coordinatrice", zones: ZONES, langues: ["wo", "fr"], capaciteMax: 0 },
     { id: "p5", prenom: "Khady", role: "specialiste", specialite: "sage-femme", zones: ZONES, langues: ["wo", "fr"], capaciteMax: 60 },
     { id: "p6", prenom: "Ndèye", role: "specialiste", specialite: "social", zones: ZONES, langues: ["wo", "fr"], capaciteMax: 40 },
@@ -102,7 +102,7 @@ export function creerBaseDemo(): Base {
       id,
       identiteId: `i${i}`,
       zone,
-      langue: r() < 0.7 ? "wo" : "fr",
+      langue: ((x: number) => (x < 0.6 ? "wo" : x < 0.7 ? (["ff", "srr", "dyo"] as const)[i % 3] : "fr"))(r()),
       canal: pick(["sms", "appel", "audio"] as const),
       horaireContact: pick(["matin", "après-midi", "soir"]),
       messageDiscret: r() < 0.5,
@@ -118,6 +118,8 @@ export function creerBaseDemo(): Base {
       creeLe: addDays(t, -sa * 5),
     };
     beneficiaires.push(b);
+    // Baby Guardian (démonstration) : un proche ou une bajenu gox pour une bénéficiaire sur trois.
+    if (i % 3 === 0) b.cercle = [{ id: `g${i}`, prenom: ["Mame Diarra", "Ousmane", "Khady", "Aïssatou"][i % 4], lien: i % 2 ? "bajenu_gox" : "partenaire", telephone: `77 900 ${String(10 + (i % 90)).padStart(2, "0")} ${String(i % 100).padStart(2, "0")}`, prevenirSiAlerte: true, accordLe: b.creeLe }];
 
     // Données simulées : le risque de manquer un rendez-vous augmente avec la distance et les absences
     // précédentes (facteurs décrits dans la littérature), pour que le modèle d'apprentissage ait un signal
@@ -218,6 +220,7 @@ export function enfantsDemo(base: Base): Pick<Base, "bebes" | "vaccinations"> {
     // Sexe, poids recopiés du carnet aux consultations, visites à domicile (un bébé sous la zone habituelle, pour la démonstration).
     const sexe = bebes.length % 2 ? "F" : "M";
     bebe.sexe = sexe;
+    if (age <= 14) bebe.premieresHeures = ["sein", "chaud", "vaccins", "cordon", "h24"].slice(0, 2 + (bebes.length % 4));
     const facteur = bebes.length === 3 ? 0.8 : 0.94 + (bebes.length % 5) * 0.03;
     bebe.mesures = [0, 42, 70, 98, 182, 270, 365, 456].filter((j) => j <= age).map((j) => ({ date: addDays(bebe.dateNaissance, j), poidsKg: Math.round(referenceOms(sexe, "med", j / 30.4375) * facteur * 10) / 10, tailleCm: j === 0 ? 49 + (bebes.length % 4) : undefined, source: "carnet" as const, saisiPar: "demo" }));
     bebe.visites = [

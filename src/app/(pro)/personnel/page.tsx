@@ -1,3 +1,4 @@
+import { nomLangue } from "@/lib/langues";
 import Link from "next/link";
 import { Copier } from "@/components/Copier";
 import { Icone } from "@/components/Icone";
@@ -257,7 +258,7 @@ export default async function TableauReferente({ searchParams }: PageProps<"/per
                         <Avatar nom={prenom(b.identiteId)} ton="neutre" />
                         <span>
                           <span className="block font-medium hover:text-brand">{prenom(b.identiteId)}</span>
-                          <span className="block text-xs text-muted">{b.zone} · {b.langue === "wo" ? "wolof" : "français"}</span>
+                          <span className="block text-xs text-muted">{b.zone} · {nomLangue(b.langue).toLowerCase()}</span>
                         </span>
                       </Link>
                     </td>

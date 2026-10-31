@@ -1,3 +1,4 @@
+import { LANGUES } from "@/lib/langues";
 import Link from "next/link";
 import { DonneesExemple } from "@/components/DonneesExemple";
 import { Ecouter } from "@/components/Ecouter";
@@ -181,6 +182,30 @@ export default async function Accueil() {
           {c.mille.promesseTraduite && <figcaption className="mt-2 text-sm text-muted">{c.mille.promesseTraduite}</figcaption>}
         </figure>
         <p className="mt-4 text-xs text-muted">{c.mille.note}</p>
+      </Section>
+
+      {/* Trois innovations : First Cry, Voice of Mama, Baby Guardian */}
+      <Section id="innovations" surtitre={c.innovations.surtitre} titre={c.innovations.titre} sous={c.innovations.sous}>
+        <div className="grid gap-4 lg:grid-cols-3">
+          {c.innovations.items.map((x) => (
+            <div key={x.titre} className="card">
+              <span className="inline-flex rounded-xl bg-brand-soft p-2 text-brand"><Icone nom={x.icone} className="size-5" /></span>
+              <h3 className="mt-3 text-lg font-semibold">{x.titre}</h3>
+              <p className="text-xs font-semibold uppercase tracking-wide text-accent">{x.sous}</p>
+              <p className="mt-2 text-sm text-muted">{x.texte}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 rounded-2xl bg-card p-5 ring-1 ring-border">
+          <p className="text-sm font-semibold">{c.innovations.languesTitre}</p>
+          {(["Sénégal", "Afrique"] as const).map((region) => (
+            <p key={region} className="mt-2 flex flex-wrap items-center gap-1.5 text-sm">
+              <span className="w-20 text-xs font-semibold uppercase tracking-wide text-muted">{region === "Sénégal" ? (langue === "en" ? "Senegal" : "Sénégal") : (langue === "en" ? "Africa" : "Afrique")}</span>
+              {LANGUES.filter((l) => l.region === region).map((l) => <span key={l.code} className={`rounded-full px-2.5 py-0.5 ring-1 ${l.voix === "a_enregistrer" ? "ring-border" : "bg-brand-soft ring-brand/30"}`}>{l.nom}</span>)}
+            </p>
+          ))}
+          <p className="mt-3 text-xs text-muted">{c.innovations.note}</p>
+        </div>
       </Section>
 
       {/* Jeunes filles */}

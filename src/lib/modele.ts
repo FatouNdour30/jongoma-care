@@ -162,6 +162,7 @@ export function evaluer(base: Base): Evaluation | null {
       ...zones.map((z) => groupe("Zone", z, (b) => b.zone === z)),
       groupe("Langue", "Wolof", (b) => b.langue === "wo"),
       groupe("Langue", "Français", (b) => b.langue === "fr"),
+      groupe("Langue", "Autres langues", (b) => b.langue !== "wo" && b.langue !== "fr"),
       groupe("Âge", "Jeunes filles (< 20 ans)", (b) => !!b.jeuneFille),
     ],
     observation,

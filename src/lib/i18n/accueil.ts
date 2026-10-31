@@ -86,6 +86,18 @@ const fr = {
       { titre: "Des besoins sensibles cachés", texte: "Santé reproductive, bien-être mental, violences : il faut une discrétion qu'un SMS lisible par tous n'offre pas." },
     ],
   },
+  innovations: {
+    surtitre: "Trois innovations",
+    titre: "Ce qui rend Jongoma Care unique",
+    sous: "Trois réponses concrètes aux moments où les mères et les bébés sont le plus exposés.",
+    items: [
+      { icone: "coeur", titre: "First Cry", sous: "Les 72 premières heures", texte: "Les gestes essentiels du nouveau-né heure par heure, les signes de danger de bébé et de maman vérifiés à 24, 48 et 72 heures, et une alerte en un geste vers la référente." },
+      { icone: "micro", titre: "Voice of Mama", sous: "Tout écouter, dans sa langue", texte: "Chaque conseil s'écoute. Wolof en test, français disponible, et toutes les langues du Sénégal et d'Afrique accueillies : une référente qui parle sa langue et des capsules enregistrées par des locutrices natives." },
+      { icone: "equipe", titre: "Baby Guardian", sous: "Le cercle de soutien", texte: "Jusqu'à 3 proches ou une bajenu gox, choisis par la mère avec leur accord, que la référente peut joindre si elle ne répond pas pendant une alerte." },
+    ] as { icone: NomIcone; titre: string; sous: string; texte: string }[],
+    languesTitre: "Langues accueillies",
+    note: "Interface en français et en anglais. Les contenus de santé ne sont jamais traduits automatiquement : ils sont enregistrés par des locutrices natives et vérifiés par une sage-femme.",
+  },
   mille: {
     surtitre: "Les 1 000 premiers jours",
     titre: "La mère et son bébé, un seul parcours",
@@ -285,6 +297,18 @@ const en: TexteAccueil = {
       { titre: "Services that are hard to find", texte: "Which facility offers which service, when, and is it reliable? This is not always clear." },
       { titre: "Hidden sensitive needs", texte: "Reproductive health, mental well-being, violence: these require a discretion that an SMS readable by anyone cannot offer." },
     ],
+  },
+  innovations: {
+    surtitre: "Three innovations",
+    titre: "What makes Jongoma Care unique",
+    sous: "Three concrete answers for the moments when mothers and babies are most at risk.",
+    items: [
+      { icone: "coeur", titre: "First Cry", sous: "The first 72 hours", texte: "Essential newborn care hour by hour, danger signs for baby and mother checked at 24, 48 and 72 hours, and a one-tap alert to the follow-up agent." },
+      { icone: "micro", titre: "Voice of Mama", sous: "Listen to everything, in her language", texte: "Every piece of advice can be heard. Wolof in testing, French available, and every language of Senegal and Africa welcome: an agent who speaks her language and audio recorded by native speakers." },
+      { icone: "equipe", titre: "Baby Guardian", sous: "The support circle", texte: "Up to 3 relatives or a bajenu gox (community godmother), chosen by the mother with their agreement, whom the agent can reach if she does not answer during an alert." },
+    ] as { icone: NomIcone; titre: string; sous: string; texte: string }[],
+    languesTitre: "Languages welcome",
+    note: "Interface in French and English. Health content is never machine-translated: it is recorded by native speakers and checked by a midwife.",
   },
   mille: {
     surtitre: "The first 1,000 days",

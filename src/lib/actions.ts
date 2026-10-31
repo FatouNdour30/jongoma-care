@@ -6,8 +6,9 @@ import { redirect } from "next/navigation";
 import { db, ecritureTerminee, enregistrer, newId, reinitialiser, synchroniser } from "./db";
 import { addDays, CALENDRIER_CPN, CALENDRIER_CPON, diffDays, ETAPES, today } from "./protocol";
 import { COOKIE_LANGUE } from "./langue";
+import { CODES_LANGUES } from "./langues";
 import { ACTIONS } from "./programmes";
-import { ALLAITEMENT_JOURS_MAX, VACCINS, VISITES } from "./enfants";
+import { ALLAITEMENT_JOURS_MAX, CERCLE_MAX, LIENS_GARDIEN, PREMIERES_HEURES, VACCINS, VISITES } from "./enfants";
 import { chiffrerSecret, effacerEchecs, estBloque, normaliserEmail, normaliserTelephone, noterEchec, verifierSecret } from "./auth";
 import { exigerRole, getSession, setSession } from "./session";
 import type { Beneficiaire, Langue, Role, TypeSpecialiste, Zone } from "./types";
@@ -164,7 +165,7 @@ export async function inscrire(f: FormData) {
   if (!coche(f, "c_service")) redirect("/femme/inscription?erreur=consentement");
   const base = db();
   const zone = parmi<Zone>(f, "zone", ZONES);
-  const langue = parmi<Langue>(f, "langue", ["wo", "fr"]) ?? "wo";
+  const langue = parmi<Langue>(f, "langue", CODES_LANGUES) ?? "wo";
   if (!zone) redirect("/femme/inscription?erreur=zone");
   const tel = telephone(f);
   if (!tel) redirect("/femme/inscription?erreur=telephone");
@@ -825,12 +826,68 @@ export async function demanderAideBebe(f: FormData) {
   redirect("/femme?aide=1#bebe");
 }
 
+// First Cry : la mère (ou la référente) coche un geste des 72 premières heures.
+export async function cocherPremiereHeure(f: FormData) {
+  const s = await getSession();
+  const base = db();
+  const bebe = s?.role === "beneficiaire" ? base.bebes.find((x) => x.beneficiaireId === s.id) : base.bebes.find((x) => x.id === str(f, "bebeId"));
+  if (!s || !bebe) return;
+  if (s.role !== "beneficiaire" && !(await bebeModifiable(bebe.id))) return;
+  const id = parmi(f, "geste", PREMIERES_HEURES.map((g) => g.id));
+  if (!id) return;
+  const faits = new Set(bebe.premieresHeures ?? []);
+  if (faits.has(id)) faits.delete(id);
+  else faits.add(id);
+  bebe.premieresHeures = [...faits];
+  enregistrer(`${s.role}:${s.id}`, "first_cry", bebe.beneficiaireId);
+  revalidatePath("/femme");
+  revalidatePath(`/personnel/beneficiaire/${bebe.beneficiaireId}`);
+}
+
+// La mère signale un signe de danger pour elle-même (après l'accouchement) : la référente est prévenue en urgence.
+export async function signalerDangerMere() {
+  const s = await exigerRole("beneficiaire");
+  const b = db().beneficiaires.find((x) => x.id === s.id);
+  if (!b) redirect("/connexion");
+  b.alerteMereLe = new Date().toISOString();
+  b.rappelDemandeLe = today();
+  enregistrer(`beneficiaire:${b.id}`, "alerte_mere", b.id);
+  await ecritureTerminee();
+  revalidatePath("/femme");
+  redirect("/femme?alerte=1#bebe");
+}
+
+// Baby Guardian : la femme ajoute un proche ou une bajenu gox à son cercle, avec l'accord de la personne.
+export async function ajouterGardien(f: FormData) {
+  const s = await exigerRole("beneficiaire");
+  const b = db().beneficiaires.find((x) => x.id === s.id);
+  if (!b) redirect("/connexion");
+  const prenom = str(f, "prenom").slice(0, 40);
+  const tel = telephone(f);
+  const lien = parmi(f, "lien", Object.keys(LIENS_GARDIEN) as (keyof typeof LIENS_GARDIEN)[]);
+  if (!prenom || !tel || !lien || !coche(f, "accord") || (b.cercle ?? []).length >= CERCLE_MAX) redirect("/femme?cercle=invalide#compte");
+  b.cercle = [...(b.cercle ?? []), { id: newId("g"), prenom, lien, telephone: tel, prevenirSiAlerte: coche(f, "prevenir"), accordLe: today() }];
+  enregistrer(`beneficiaire:${b.id}`, "cercle_ajout", b.id);
+  revalidatePath("/femme");
+  redirect("/femme?cercle=ajoute#compte");
+}
+
+export async function retirerGardien(f: FormData) {
+  const s = await exigerRole("beneficiaire");
+  const b = db().beneficiaires.find((x) => x.id === s.id);
+  if (!b) redirect("/connexion");
+  b.cercle = (b.cercle ?? []).filter((g) => g.id !== str(f, "gardienId"));
+  enregistrer(`beneficiaire:${b.id}`, "cercle_retrait", b.id);
+  revalidatePath("/femme");
+}
+
 // La référente a joint la mère au sujet du signe de danger : l'alerte est levée.
 export async function leverAlerteBebe(f: FormData) {
   const { s, b } = await beneficiaireDeLaReferente(str(f, "beneficiaireId"));
   const bebe = db().bebes.find((x) => x.beneficiaireId === b.id);
-  if (!bebe?.alerteDangerLe) return;
-  bebe.alerteDangerLe = undefined;
+  if (!bebe?.alerteDangerLe && !b.alerteMereLe) return;
+  if (bebe) bebe.alerteDangerLe = undefined;
+  b.alerteMereLe = undefined;
   b.dernierContact = today();
   b.rappelDemandeLe = undefined;
   enregistrer(`${s.role}:${s.id}`, "alerte_bebe_traitee", b.id);

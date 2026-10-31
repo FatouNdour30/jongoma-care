@@ -1,3 +1,4 @@
+import { nomLangue } from "@/lib/langues";
 import { ChampIcone } from "@/components/AuthShell";
 import { Avatar, EnTete, Panneau, ilYa } from "@/components/pro";
 import { Alerte, LIBELLES, libelleAction } from "@/components/ui";
@@ -46,7 +47,7 @@ export default async function MonCompte({ searchParams }: PageProps<"/espace/com
           <dl className="mt-5 divide-y divide-border text-sm">
             <div className="flex justify-between gap-4 py-2"><dt className="text-muted">Identifiant</dt><dd className="font-medium">{compte.identifiant}</dd></div>
             {p && <div className="flex justify-between gap-4 py-2"><dt className="text-muted">Zones</dt><dd>{p.zones.join(", ")}</dd></div>}
-            {p && <div className="flex justify-between gap-4 py-2"><dt className="text-muted">Langues</dt><dd>{p.langues.map((l) => (l === "wo" ? "wolof" : "français")).join(", ")}</dd></div>}
+            {p && <div className="flex justify-between gap-4 py-2"><dt className="text-muted">Langues</dt><dd>{p.langues.map((l) => nomLangue(l).toLowerCase()).join(", ")}</dd></div>}
             <div className="flex justify-between gap-4 py-2"><dt className="text-muted">Compte créé</dt><dd>{ilYa(compte.creeLe)}</dd></div>
             <div className="flex justify-between gap-4 py-2"><dt className="text-muted">Dernière connexion</dt><dd>{compte.derniereConnexion ? new Date(compte.derniereConnexion).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" }) : "—"}</dd></div>
           </dl>

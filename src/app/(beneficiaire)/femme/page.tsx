@@ -1,3 +1,4 @@
+import { langue as infoLangue, LANGUES, LIBELLE_VOIX } from "@/lib/langues";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CourbeCroissance } from "@/components/Croissance";
@@ -8,10 +9,10 @@ import { Icone, type NomIcone } from "@/components/Icone";
 import { Parler } from "@/components/Parler";
 import { dateLongue, Kpi, Panneau, Vide } from "@/components/pro";
 import { Alerte, Badge, fmt, LIBELLES, tonRdv } from "@/components/ui";
-import { annulerDemande, changerReferente, declarerEtatCivil, demanderAideBebe, majPreferences, repondreAllaitement, repondreOrientation, signalerSigneDanger, supprimerMesDonnees } from "@/lib/actions";
+import { ajouterGardien, annulerDemande, changerReferente, cocherPremiereHeure, declarerEtatCivil, demanderAideBebe, retirerGardien, signalerDangerMere, majPreferences, repondreAllaitement, repondreOrientation, signalerSigneDanger, supprimerMesDonnees } from "@/lib/actions";
 import { CAPSULES } from "@/lib/contenus";
 import { db } from "@/lib/db";
-import { ageBebe, ALLAITEMENT_JOURS_MAX, conseilDuMoment, ETAT_CIVIL, etapeParcours, etatVaccins, LIBELLE_VACCIN, MENTION_A_VALIDER, MENTION_CONSEILS, nomBebe, NUMERO_URGENCE, prochaineEtape, SIGNES_DANGER } from "@/lib/enfants";
+import { ageBebe, ALLAITEMENT_JOURS_MAX, CERCLE_MAX, conseilDuMoment, FIRST_CRY_JOURS, LIENS_GARDIEN, PREMIERES_HEURES, SIGNES_DANGER_MERE, ETAT_CIVIL, etapeParcours, etatVaccins, LIBELLE_VACCIN, MENTION_A_VALIDER, MENTION_CONSEILS, nomBebe, NUMERO_URGENCE, prochaineEtape, SIGNES_DANGER } from "@/lib/enfants";
 import { etatPreventions, PROGRAMMES } from "@/lib/programmes";
 import { datePrevue, diffDays, ETAPES, semainesAmenorrhee, today } from "@/lib/protocol";
 import { exigerRole, getSession } from "@/lib/session";
@@ -71,6 +72,10 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
   const etapeVaccin = bebe ? prochaineEtape(bebe, base) : null;
   const vaccinsFaits = vaccins.filter((e) => e.statut === "fait").length;
   const conseil = bebe ? conseilDuMoment(bebe.dateNaissance, t) : undefined;
+  const ageJours = bebe ? diffDays(t, bebe.dateNaissance) : null;
+  const firstCry = ageJours !== null && ageJours <= 14;
+  const gestesFaits = new Set(bebe?.premieresHeures ?? []);
+  const maLangue = infoLangue(b.langue);
   const consultationsBebe = bebe ? rdvs.filter((r) => r.type === "CPoN" && r.date >= bebe.dateNaissance).reverse() : [];
   const vaccinsEchus = vaccins.filter((e) => e.statut !== "plus_tard").length;
   const preventionsAFaire = preventions.filter((e) => e.statut === "a_faire" || e.statut === "en_retard").length;
@@ -92,6 +97,8 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
       : `Votre prochain rendez-vous : ${prochain.libelle}, le ${fmt(prochain.date)}, à ${nomStructure(prochain.structureId)}.`
     : "Vous n'avez pas de rendez-vous prévu. Votre référente va vous contacter.";
 
+  const toutEcouter = [resume, resumeBebe].filter(Boolean).join(" ");
+
   // Ce qui demande une action de sa part, ou mérite son attention.
   const aFaire: { icone: NomIcone; texte: string; detail: string; href: string; urgent?: boolean }[] = [];
   if (bebe?.alerteDangerLe) aFaire.push({ icone: "telephone", texte: "Votre référente est prévenue", detail: "Si vous n'êtes pas déjà au centre de santé, allez-y maintenant", href: "#bebe", urgent: true });
@@ -112,6 +119,8 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
       {sp.demande === "doublon" && <Alerte ton="orange">Vous avez déjà une demande en cours pour ce besoin auprès de cette structure.</Alerte>}
       {sp.demande === "annulee" && <Alerte>Demande annulée.</Alerte>}
       {sp.enregistre && <Alerte>Préférences enregistrées.</Alerte>}
+      {sp.cercle === "ajoute" && <Alerte>La personne est ajoutée à votre cercle de soutien.</Alerte>}
+      {sp.cercle === "invalide" && <Alerte ton="orange">Indiquez un prénom, un numéro valide, le lien, et confirmez que la personne est d&apos;accord (3 personnes au plus).</Alerte>}
       {sp.aide && <Alerte>Votre demande est envoyée : votre référente va vous rappeler.</Alerte>}
       {sp.alerte && <Alerte ton="orange">Votre référente est prévenue et va vous appeler. <strong>N&apos;attendez pas son appel : allez tout de suite au centre de santé</strong>, ou appelez le SAMU au {NUMERO_URGENCE}.</Alerte>}
       {sp.referente === "changee" && <Alerte>Une nouvelle référente vous a été attribuée.</Alerte>}
@@ -307,6 +316,33 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
         <div id="bebe" className="scroll-mt-40 lg:scroll-mt-8">
           <Panneau titre="Mon bébé" sous={`${nomBebe(bebe)} · ${ageBebe(bebe.dateNaissance)}`}>
             <div className="space-y-3">
+              {firstCry && (
+                <div className="rounded-2xl border-2 border-brand/30 bg-brand-soft/30 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-brand">First Cry · {ageJours! <= FIRST_CRY_JOURS ? "les 72 premières heures" : "récapitulatif des 72 premières heures"}</p>
+                  <p className="mt-1 text-sm text-muted">Les gestes qui protègent bébé et maman juste après la naissance. Cochez ce qui est fait ; votre référente suit avec vous.</p>
+                  <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                    {PREMIERES_HEURES.map((g) => (
+                      <li key={g.id}>
+                        <form action={cocherPremiereHeure}>
+                          <input type="hidden" name="geste" value={g.id} />
+                          <button className={`flex w-full items-start gap-3 rounded-xl p-2.5 text-left text-sm ring-1 transition ${gestesFaits.has(g.id) ? "bg-card ring-brand/40" : "bg-card/60 ring-border hover:ring-brand/40"}`} aria-pressed={gestesFaits.has(g.id)}>
+                            <span className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full text-xs font-bold ${gestesFaits.has(g.id) ? "bg-brand text-white" : "ring-1 ring-border"}`}>{gestesFaits.has(g.id) ? "✓" : ""}</span>
+                            <span><span className="block text-xs font-semibold text-brand">{g.moment}</span>{g.texte}</span>
+                          </button>
+                        </form>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-3 rounded-xl bg-red-50/80 p-3 text-sm text-red-950 ring-1 ring-red-200">
+                    <p className="font-semibold">Et pour vous, maman : allez tout de suite au centre de santé en cas de</p>
+                    <p className="mt-1">{SIGNES_DANGER_MERE.join(" · ")}.</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-3">
+                      <Ecouter texte={`Pour vous, maman, allez tout de suite au centre de santé en cas de : ${SIGNES_DANGER_MERE.join(", ")}.`} />
+                      {b.alerteMereLe ? <span className="font-semibold">Votre référente est prévenue.</span> : <form action={signalerDangerMere}><button className="btn btn-sm !bg-red-700 hover:!bg-red-800">J&apos;ai un de ces signes : prévenir ma référente</button></form>}
+                    </div>
+                  </div>
+                </div>
+              )}
               <p className="text-lg">{resumeBebe}</p>
               {etapeVaccin?.enRetard && <Badge ton="rouge">Vaccination en retard : parlez-en à votre référente</Badge>}
               <Ecouter texte={resumeBebe} />
@@ -457,7 +493,17 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
 
       {/* Écouter */}
       <div id="ecouter" className="scroll-mt-40 lg:scroll-mt-8">
-        <Panneau titre="Écouter" sous="Des conseils à écouter, en attente de validation par une sage-femme.">
+        <Panneau titre="Voice of Mama" sous="Tout écouter et poser une question à voix haute. Conseils en attente de validation par une sage-femme." action={<Ecouter texte={toutEcouter} libelle="Tout écouter" />}>
+          <div className="mb-4 rounded-xl bg-brand-soft/40 p-3 text-sm">
+            <p><span className="font-semibold">Votre langue : {maLangue?.nom ?? b.langue}</span> · {LIBELLE_VOIX[maLangue?.voix ?? "a_enregistrer"]}</p>
+            <p className="mt-1 text-xs text-muted">{maLangue?.voix === "disponible" ? "Les conseils se lisent à voix haute dans votre langue." : maLangue?.voix === "test" ? "La voix wolof est en test avec des femmes ; en attendant, les conseils se lisent en français et votre référente vous les explique en wolof." : "Les messages dans votre langue seront enregistrés par des locutrices natives. En attendant, votre référente vous explique tout dans votre langue."}</p>
+            <details className="mt-2 text-xs">
+              <summary className="cursor-pointer text-brand underline">Langues prises en charge</summary>
+              <ul className="mt-2 flex flex-wrap gap-1.5">
+                {LANGUES.map((l) => <li key={l.code} className="rounded-full bg-card px-2 py-0.5 ring-1 ring-border">{l.nom} · {LIBELLE_VOIX[l.voix].toLowerCase()}</li>)}
+              </ul>
+            </details>
+          </div>
           <div className="mb-4"><Parler /></div>
           <div className="grid gap-3 sm:grid-cols-2">
             {CAPSULES.map((c) => (
@@ -472,6 +518,28 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
 
       {/* Compte : orientations, préférences, données */}
       <div id="compte" className="scroll-mt-40 lg:scroll-mt-8 space-y-5">
+        <Panneau titre={discret ? "Mes proches" : "Baby Guardian · mon cercle de soutien"} sous="Jusqu'à 3 proches ou une bajenu gox, avec leur accord. Votre référente peut les appeler si vous ne répondez pas pendant une alerte.">
+          {(b.cercle ?? []).length > 0 && (
+            <ul className="mb-4 divide-y divide-border text-sm">
+              {b.cercle!.map((g) => (
+                <li key={g.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                  <span><span className="font-medium">{g.prenom}</span> · {LIENS_GARDIEN[g.lien]} · {g.telephone}{g.prevenirSiAlerte ? <span className="text-xs text-muted"> · peut être prévenue en cas d&apos;alerte</span> : ""}</span>
+                  <form action={retirerGardien}><input type="hidden" name="gardienId" value={g.id} /><button className="text-xs text-muted underline">Retirer</button></form>
+                </li>
+              ))}
+            </ul>
+          )}
+          {(b.cercle ?? []).length < CERCLE_MAX ? (
+            <form action={ajouterGardien} className="grid gap-3 sm:grid-cols-3">
+              <label className="text-sm">Prénom<input name="prenom" required maxLength={40} className="field mt-1" /></label>
+              <label className="text-sm">Lien<select name="lien" className="field mt-1">{Object.entries(LIENS_GARDIEN).map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
+              <label className="text-sm">Téléphone<input name="telephone" required type="tel" inputMode="tel" placeholder="77 123 45 67" className="field mt-1" /></label>
+              <label className="flex gap-2 text-sm sm:col-span-3"><input type="checkbox" name="prevenir" defaultChecked className="mt-0.5 size-4 accent-[var(--brand)]" />Ma référente peut la prévenir si je ne réponds pas pendant une alerte</label>
+              <label className="flex gap-2 text-sm sm:col-span-3"><input type="checkbox" name="accord" required className="mt-0.5 size-4 accent-[var(--brand)]" />Cette personne est d&apos;accord pour faire partie de mon cercle</label>
+              <div className="sm:col-span-3"><button className="btn-sec btn-sm">Ajouter à mon cercle</button></div>
+            </form>
+          ) : <p className="text-sm text-muted">Votre cercle est complet (3 personnes).</p>}
+        </Panneau>
         {orientations.some((o) => o.statut !== "proposee") && (
           <Panneau titre="Mes orientations">
             <ul className="divide-y divide-border text-sm">

@@ -1,3 +1,4 @@
+import { nomLangue } from "@/lib/langues";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PanneauBebe } from "@/components/Bebe";
@@ -42,7 +43,7 @@ export default async function PlanDeSuivi({ params, searchParams }: PageProps<"/
       <Link href={s.role === "referente" ? "/personnel" : "/coordination"} className="text-sm text-muted underline">← Retour</Link>
       <Titre
         titre={ident?.prenom ?? "Bénéficiaire"}
-        sous={`${b.zone} · ${b.langue === "wo" ? "wolof" : "français"} · contact ${b.canal}, ${b.horaireContact}${b.messageDiscret ? " · messages discrets" : ""}${b.jeuneFille ? " · jeune fille (< 20 ans) : accompagnement adapté" : ""}`}
+        sous={`${b.zone} · ${nomLangue(b.langue).toLowerCase()} · contact ${b.canal}, ${b.horaireContact}${b.messageDiscret ? " · messages discrets" : ""}${b.jeuneFille ? " · jeune fille (< 20 ans) : accompagnement adapté" : ""}`}
         action={
           <div className="flex flex-wrap gap-2">
             <form action={enregistrerContact}>
