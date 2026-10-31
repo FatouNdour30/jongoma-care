@@ -11,7 +11,7 @@ const marque = Cinzel({ variable: "--font-marque", subsets: ["latin"], weight: [
 
 export const metadata: Metadata = {
   title: "Jongoma Care by Jongoma Tech",
-  description: "Suivi maternel inclusif, orientation et données ouvertes pour les femmes et les filles. Un projet Jongoma Tech.",
+  description: "Infrastructure humaine et numérique d'accompagnement des femmes : bénéficiaires, référentes et professionnels de santé reliés. Un projet Jongoma Tech.",
   manifest: "/manifest.webmanifest",
 };
 

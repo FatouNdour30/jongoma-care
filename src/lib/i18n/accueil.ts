@@ -4,10 +4,10 @@ import type { NomIcone } from "@/components/Icone";
 const fr = {
   intro: "Bienvenue sur Jongoma Care. Une référente vous accompagne pendant votre grossesse et après l'accouchement. Vous recevez des rappels pour vos rendez-vous et vous trouvez des structures de santé vérifiées. Vos informations restent confidentielles.",
   hero: {
-    badge: "Santé maternelle · Sénégal · Open source",
+    badge: "Infrastructure d'accompagnement · Sénégal · Open source",
     titre1: "Chaque femme suivie, ",
     titre2: "de la grossesse au postnatal.",
-    texte: "Une référente qui accompagne chaque femme, des rappels en wolof et en français, et un accès à des structures de santé vérifiées. Pensé pour les téléphones simples et les femmes qui lisent peu.",
+    texte: "Une infrastructure humaine et numérique qui relie chaque femme, sa référente de quartier et les professionnels de santé : rappels en wolof et en français, structures vérifiées, suivi de la mère et du bébé. Pensée pour les téléphones simples et les femmes qui lisent peu.",
     demo: "Essayer la démo",
     inscrire: "S'inscrire",
     ecouter: "Écouter",
@@ -177,10 +177,10 @@ export type TexteAccueil = typeof fr;
 const en: TexteAccueil = {
   intro: "Welcome to Jongoma Care. A dedicated follow-up agent supports you during pregnancy and after delivery. You receive appointment reminders and can find verified health facilities. Your information stays confidential.",
   hero: {
-    badge: "Maternal health · Senegal · Open source",
+    badge: "Care infrastructure · Senegal · Open source",
     titre1: "Every woman followed, ",
     titre2: "from pregnancy to postnatal care.",
-    texte: "A dedicated follow-up agent for every woman, reminders in Wolof and French, and access to verified health facilities. Designed for basic phones and for women with low literacy.",
+    texte: "A human and digital infrastructure that connects each woman, her neighbourhood follow-up agent and health professionals: reminders in Wolof and French, verified facilities, follow-up for mother and baby. Designed for basic phones and for women with low literacy.",
     demo: "Try the demo",
     inscrire: "Sign up",
     ecouter: "Listen",

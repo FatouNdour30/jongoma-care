@@ -1,10 +1,14 @@
 # Jongoma Care
 
-> **English summary.** Jongoma Care is an open-source platform by Jongoma Tech (Senegal) for maternal follow-up of women and girls. Each consenting woman gets a named human referent from registration to postnatal care, backed by reminders, local-language audio, a verified facility directory, explainable call-back prioritisation, newborn and vaccination follow-up, an optional Wolof voice layer (prototype) and a public open-data dashboard. This repository is a **working prototype with fictitious data**.
+> **English summary.** Jongoma Care is an open-source human and digital care infrastructure by Jongoma Tech (Senegal) that connects women, their neighbourhood follow-up agents and health professionals. Each consenting woman gets a named human referent from registration to postnatal care, backed by reminders, local-language audio, a verified facility directory, explainable call-back prioritisation (with a machine-learning model running in shadow mode), newborn and vaccination follow-up, an optional Wolof voice layer (prototype) and a public open-data dashboard. This repository is a **working prototype with fictitious data**.
 >
 > **Live demo:** https://jongoma-care.vercel.app · **Licence:** Apache-2.0
 
 Plateforme numérique inclusive pour la santé, le bien-être et la protection des femmes et des filles. **Ce dépôt est un prototype : toutes les données sont fictives.**
+
+Plus qu'une application de suivi de grossesse, Jongoma Care est une **infrastructure humaine et numérique d'accompagnement** : elle relie chaque femme, sa référente de quartier et les professionnels de santé.
+
+**Documents :** [protection des données de santé](docs/PROTECTION-DES-DONNEES.md) · [pilote avec de vraies femmes](docs/PILOTE.md) · [retours des utilisatrices](docs/RETOURS.md) · [évaluation de la voix wolof sur Colab](https://colab.research.google.com/github/FatouNdour30/jongoma-care/blob/master/services/voix-wolof/evaluation_colab.ipynb)
 
 ## Fonctionnalités du prototype
 
