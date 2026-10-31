@@ -10,6 +10,7 @@ const PROGRAMMES_EN: Record<IdProgramme, { nom: string; court: string; pourquoi:
   tetanos: { nom: "Maternal and neonatal tetanus", court: "Tetanus", pourquoi: "Vaccinating the mother also protects the newborn." },
   mental: { nom: "Mental health after birth", court: "Mental well-being", pourquoi: "Fatigue, sadness or anxiety after birth are common. Talking about it helps women get support." },
   col: { nom: "Cervical cancer", court: "Cervical cancer", pourquoi: "Screening detects early lesions that are easily treated." },
+  pf: { nom: "Birth spacing", court: "Birth spacing", pourquoi: "Waiting at least two years before a new pregnancy protects the health of mother and baby. The midwife presents the methods; the woman chooses freely." },
 };
 
 const ACTIONS_EN: Record<string, string> = {
@@ -26,6 +27,7 @@ const ACTIONS_EN: Record<string, string> = {
   vat: "Tetanus vaccination",
   bienetre: "Well-being conversation offered",
   col: "Cervical cancer screening offered",
+  pf_conseil: "Birth spacing counselling offered",
 };
 
 export function programmes(l: LangueUI) {

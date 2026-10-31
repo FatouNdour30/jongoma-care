@@ -70,7 +70,7 @@ export function calculerPriorite(b: Beneficiaire, base: Base): Priorite {
   }
 
   // Le programme « santé mentale » est exclu : aucune donnée de santé mentale dans le score.
-  const retards = enRetard(b, base).filter((e) => e.action.programme !== "mental").length;
+  const retards = enRetard(b, base).filter((e) => e.action.programme !== "mental" && e.action.programme !== "pf").length;
   if (retards) {
     score += poids("prevention");
     motifs.push(`${retards} prévention${retards > 1 ? "s" : ""} en retard`);

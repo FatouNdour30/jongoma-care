@@ -55,6 +55,9 @@ export interface Beneficiaire {
   rappelDemandeLe?: string;
   // Signe de danger signalé par la mère pour elle-même après l'accouchement (date et heure) ; levé par la référente.
   alerteMereLe?: string;
+  // Demandes confidentielles : seule la date est notée, jamais le sujet (contraception, violences…).
+  souhaitSageFemmeLe?: string; // souhaite parler à une sage-femme de sa santé de femme
+  aideConfidentielleLe?: string; // souhaite être rappelée discrètement, quand elle est seule
   // Baby Guardian : proches et relais communautaires choisis par la femme, avec leur accord (3 au plus).
   cercle?: Gardien[];
   creeLe: string;

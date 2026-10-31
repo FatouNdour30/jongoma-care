@@ -48,7 +48,7 @@ export function PanneauBebe({ b, modifiable = true }: { b: Beneficiaire; modifia
   const echus = etats.filter((e) => e.statut !== "plus_tard").length;
   const t = today();
   const rdvMere = base.rendezVous.filter((r) => r.beneficiaireId === b.id && r.type === "CPoN");
-  const preventionsRetard = enRetard(b, base).filter((e) => e.action.programme !== "mental").length;
+  const preventionsRetard = enRetard(b, base).filter((e) => e.action.programme !== "mental" && e.action.programme !== "pf").length;
   const zone = zonePoids(bebe);
   const derniereMesure = (bebe.mesures ?? []).at(-1);
   // Double suivi mère-bébé : une vue d'ensemble du foyer, sans remplacer les professionnels de santé.

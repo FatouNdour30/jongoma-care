@@ -58,6 +58,8 @@ export default async function PlanDeSuivi({ params, searchParams }: PageProps<"/
         }
       />
       {escalade && <Alerte ton="orange">Escalade enregistrée. Suivez la procédure ci-dessous.</Alerte>}
+      {b.aideConfidentielleLe && <Alerte ton="orange">Elle demande à être rappelée <strong>discrètement</strong> (depuis le {fmt(b.aideConfidentielleLe)}). Appelez quand elle peut parler seule, ne laissez aucun message détaillé ; si elle évoque des violences, proposez une orientation vers la référente protection.</Alerte>}
+      {b.souhaitSageFemmeLe && <Alerte>Elle souhaite parler à une sage-femme de sa santé de femme (depuis le {fmt(b.souhaitSageFemmeLe)}). Proposez-lui une orientation, avec son accord.</Alerte>}
 
       <section className="card">
         <h2 className="mb-3 font-semibold">Plan de suivi individuel</h2>

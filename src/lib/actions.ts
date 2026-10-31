@@ -356,6 +356,8 @@ export async function enregistrerContact(f: FormData) {
   b.dernierContact = today();
   b.rappelsSansReponse = 0;
   b.rappelDemandeLe = undefined;
+  b.aideConfidentielleLe = undefined;
+  b.souhaitSageFemmeLe = undefined;
   enregistrer(`${s.role}:${s.id}`, "contact", b.id);
   revalidatePath(`/personnel/beneficiaire/${b.id}`);
   revalidatePath("/personnel");
@@ -855,6 +857,21 @@ export async function signalerDangerMere() {
   await ecritureTerminee();
   revalidatePath("/femme");
   redirect("/femme?alerte=1#bebe");
+}
+
+// Santé et droits : la femme demande à parler à une sage-femme (espacement des naissances, règles,
+// santé intime…) ou à être rappelée discrètement (violences, situation difficile). Le sujet n'est jamais noté.
+export async function demanderConfidentiel(f: FormData) {
+  const s = await exigerRole("beneficiaire");
+  const b = db().beneficiaires.find((x) => x.id === s.id);
+  if (!b) redirect("/connexion");
+  const quoi = parmi(f, "quoi", ["sage_femme", "discret"] as const);
+  if (quoi === "sage_femme") b.souhaitSageFemmeLe = today();
+  else b.aideConfidentielleLe = today();
+  enregistrer(`beneficiaire:${b.id}`, "demande_confidentielle", b.id);
+  await ecritureTerminee();
+  revalidatePath("/femme");
+  redirect("/femme?confidentiel=1#sante");
 }
 
 // Baby Guardian : la femme ajoute un proche ou une bajenu gox à son cercle, avec l'accord de la personne.

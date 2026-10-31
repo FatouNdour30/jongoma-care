@@ -38,6 +38,10 @@ export function notifications(s: Session, base: Base): Notification[] {
     const premieres72h = base.bebes.filter((x) => ids.has(x.beneficiaireId) && diffDays(t, x.dateNaissance) <= 3).length;
     ajouter(premieres72h, "important", `${pluriel(premieres72h, "nouveau-né")} de moins de 72 heures`, "First Cry : appelez la mère chaque jour et prévoyez la visite des 3 premiers jours.", "/personnel#liste");
     ajouter(alertesBebe, "urgent", `${pluriel(alertesBebe, "signe")} de danger signalé${alertesBebe > 1 ? "s" : ""} (bébé ou maman)`, "Appelez la mère tout de suite ; si elle ne répond pas, son cercle de soutien.", "/personnel#liste");
+    const discretes = mes.filter((b) => b.aideConfidentielleLe).length;
+    ajouter(discretes, "urgent", `${pluriel(discretes, "bénéficiaire")} demande${discretes > 1 ? "nt" : ""} à être rappelée${discretes > 1 ? "s" : ""} discrètement`, "Appelez quand elle peut parler seule ; ne laissez aucun message détaillé.", "/personnel#liste");
+    const sagesFemmes = mes.filter((b) => b.souhaitSageFemmeLe).length;
+    ajouter(sagesFemmes, "important", `${pluriel(sagesFemmes, "bénéficiaire")} souhaite${sagesFemmes > 1 ? "nt" : ""} parler à une sage-femme`, "Proposez-lui une orientation vers la sage-femme, avec son accord.", "/personnel#liste");
     ajouter(hautes, "urgent", `${pluriel(hautes, "bénéficiaire")} en priorité haute`, "À rappeler aujourd'hui.", "/personnel#appels");
     const rappelsDemandes = mes.filter((b) => b.rappelDemandeLe).length;
     ajouter(rappelsDemandes, "urgent", `${pluriel(rappelsDemandes, "bénéficiaire")} demande${rappelsDemandes > 1 ? "nt" : ""} à être rappelée${rappelsDemandes > 1 ? "s" : ""}`, "Question posée à l'assistant vocal, sans réponse validée : rappelez-la.", "/personnel#liste");

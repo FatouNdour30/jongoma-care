@@ -9,10 +9,10 @@ import { Icone, type NomIcone } from "@/components/Icone";
 import { Parler } from "@/components/Parler";
 import { dateLongue, Kpi, Panneau, Vide } from "@/components/pro";
 import { Alerte, Badge, fmt, LIBELLES, tonRdv } from "@/components/ui";
-import { ajouterGardien, annulerDemande, changerReferente, cocherPremiereHeure, declarerEtatCivil, demanderAideBebe, retirerGardien, signalerDangerMere, majPreferences, repondreAllaitement, repondreOrientation, signalerSigneDanger, supprimerMesDonnees } from "@/lib/actions";
+import { ajouterGardien, annulerDemande, changerReferente, cocherPremiereHeure, declarerEtatCivil, demanderConfidentiel, demanderAideBebe, retirerGardien, signalerDangerMere, majPreferences, repondreAllaitement, repondreOrientation, signalerSigneDanger, supprimerMesDonnees } from "@/lib/actions";
 import { CAPSULES } from "@/lib/contenus";
 import { db } from "@/lib/db";
-import { ageBebe, ALLAITEMENT_JOURS_MAX, CERCLE_MAX, conseilDuMoment, FIRST_CRY_JOURS, LIENS_GARDIEN, PREMIERES_HEURES, SIGNES_DANGER_MERE, ETAT_CIVIL, etapeParcours, etatVaccins, LIBELLE_VACCIN, MENTION_A_VALIDER, MENTION_CONSEILS, nomBebe, NUMERO_URGENCE, prochaineEtape, SIGNES_DANGER } from "@/lib/enfants";
+import { ageBebe, ALLAITEMENT_JOURS_MAX, CERCLE_MAX, conseilDuMoment, ESPACEMENT, MENTION_SSR, REGLES_PUBERTE, VIOLENCES, FIRST_CRY_JOURS, LIENS_GARDIEN, PREMIERES_HEURES, SIGNES_DANGER_MERE, ETAT_CIVIL, etapeParcours, etatVaccins, LIBELLE_VACCIN, MENTION_A_VALIDER, MENTION_CONSEILS, nomBebe, NUMERO_URGENCE, prochaineEtape, SIGNES_DANGER } from "@/lib/enfants";
 import { etatPreventions, PROGRAMMES } from "@/lib/programmes";
 import { datePrevue, diffDays, ETAPES, semainesAmenorrhee, today } from "@/lib/protocol";
 import { exigerRole, getSession } from "@/lib/session";
@@ -121,6 +121,7 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
       {sp.enregistre && <Alerte>Préférences enregistrées.</Alerte>}
       {sp.cercle === "ajoute" && <Alerte>La personne est ajoutée à votre cercle de soutien.</Alerte>}
       {sp.cercle === "invalide" && <Alerte ton="orange">Indiquez un prénom, un numéro valide, le lien, et confirmez que la personne est d&apos;accord (3 personnes au plus).</Alerte>}
+      {sp.confidentiel && <Alerte>C&apos;est noté : votre référente vous rappellera discrètement. Le sujet de votre demande n&apos;est pas enregistré.</Alerte>}
       {sp.aide && <Alerte>Votre demande est envoyée : votre référente va vous rappeler.</Alerte>}
       {sp.alerte && <Alerte ton="orange">Votre référente est prévenue et va vous appeler. <strong>N&apos;attendez pas son appel : allez tout de suite au centre de santé</strong>, ou appelez le SAMU au {NUMERO_URGENCE}.</Alerte>}
       {sp.referente === "changee" && <Alerte>Une nouvelle référente vous a été attribuée.</Alerte>}
@@ -490,6 +491,41 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
           <p className="mt-3 text-xs text-muted">Jongoma Care n&apos;enregistre jamais les résultats de vos examens. Ils restent entre vous et votre sage-femme.</p>
         </Panneau>
       </div>
+
+      {/* Santé et droits sexuels et reproductifs (titres neutres en mode discret) */}
+      <Panneau titre={discret ? "Ma santé" : "Ma santé et mes droits"} sous="Des informations confidentielles, et une personne formée pour en parler si vous le souhaitez.">
+        <div className={`grid gap-4 ${b.jeuneFille ? "lg:grid-cols-3" : "md:grid-cols-2"}`}>
+          <div className="rounded-2xl border border-border p-4">
+            <p className="font-semibold">{discret ? "Prendre soin de soi" : "Espacement des naissances"}</p>
+            <p className="mt-1 text-sm text-muted">{ESPACEMENT.texte}</p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <Ecouter texte={ESPACEMENT.texte} />
+              {b.souhaitSageFemmeLe ? <span className="text-xs font-semibold text-brand">Demande envoyée</span> : (
+                <form action={demanderConfidentiel}><input type="hidden" name="quoi" value="sage_femme" /><button className="btn-sec btn-sm">En parler à une sage-femme</button></form>
+              )}
+            </div>
+          </div>
+          {b.jeuneFille && (
+            <div className="rounded-2xl border border-border p-4">
+              <p className="font-semibold">{discret ? "Mon corps" : "Règles et puberté"}</p>
+              <p className="mt-1 text-sm text-muted">{REGLES_PUBERTE.texte}</p>
+              <div className="mt-3"><Ecouter texte={REGLES_PUBERTE.texte} /></div>
+            </div>
+          )}
+          <div className="rounded-2xl border border-border p-4">
+            <p className="font-semibold">{discret ? "Parler en confiance" : "Violences : vous n'êtes pas seule"}</p>
+            <p className="mt-1 text-sm text-muted">{VIOLENCES.texte}</p>
+            <p className="mt-2 text-sm font-semibold text-red-800">{VIOLENCES.urgence}</p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <Ecouter texte={`${VIOLENCES.texte} ${VIOLENCES.urgence}`} />
+              {b.aideConfidentielleLe ? <span className="text-xs font-semibold text-brand">Demande envoyée</span> : (
+                <form action={demanderConfidentiel}><input type="hidden" name="quoi" value="discret" /><button className="btn-sec btn-sm">Être rappelée discrètement</button></form>
+              )}
+            </div>
+          </div>
+        </div>
+        <p className="mt-3 text-xs text-muted">{MENTION_SSR}</p>
+      </Panneau>
 
       {/* Écouter */}
       <div id="ecouter" className="scroll-mt-40 lg:scroll-mt-8">

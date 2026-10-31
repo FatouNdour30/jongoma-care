@@ -227,3 +227,18 @@ export const LIENS_GARDIEN = {
   autre: "Autre proche",
 } as const;
 export const CERCLE_MAX = 3;
+
+// ---------- Santé et droits sexuels et reproductifs ----------
+// Contenus indicatifs, à valider par une sage-femme et des associations partenaires. Aucune méthode, aucun
+// symptôme et aucune situation ne sont enregistrés : seulement le souhait d'être rappelée.
+export const ESPACEMENT = {
+  texte: "Attendre au moins deux ans avant une nouvelle grossesse protège votre santé et celle de votre bébé. Plusieurs méthodes existent : implant, stérilet, injection, pilule, préservatif. Si vous allaitez seulement au sein, jour et nuit, que vos règles ne sont pas revenues et que bébé a moins de 6 mois, l'allaitement protège aussi, pour un temps. Le préservatif protège en plus des infections sexuellement transmissibles. C'est vous qui choisissez, librement.",
+};
+export const REGLES_PUBERTE = {
+  texte: "Les règles sont normales et reviennent chaque mois. Changez de protection plusieurs fois par jour et lavez-vous à l'eau propre. Des douleurs très fortes, des règles très abondantes ou absentes pendant longtemps : parlez-en à une sage-femme, en toute confidentialité.",
+};
+export const VIOLENCES = {
+  texte: "Personne n'a le droit de vous frapper, de vous forcer, de vous humilier ni de vous marier contre votre volonté. Vous n'êtes pas seule : vous pouvez en parler en toute confidentialité, et être orientée vers une personne formée pour vous aider.",
+  urgence: "En danger immédiat : police 17, SAMU 1515.",
+};
+export const MENTION_SSR = "Contenus à valider par une sage-femme et des associations partenaires. Le sujet de votre demande n'est jamais enregistré.";

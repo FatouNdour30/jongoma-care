@@ -5,7 +5,7 @@
 import { diffDays, semainesAmenorrhee, today } from "./protocol";
 import type { Base, Beneficiaire } from "./types";
 
-export type IdProgramme = "paludisme" | "anemie" | "triple" | "hypertension" | "tetanos" | "mental" | "col";
+export type IdProgramme = "paludisme" | "anemie" | "triple" | "hypertension" | "tetanos" | "mental" | "col" | "pf";
 
 export interface ActionPrevention {
   id: string;
@@ -31,6 +31,7 @@ export const PROGRAMMES: Programme[] = [
   { id: "tetanos", nom: "Tétanos maternel et néonatal", court: "Tétanos", pourquoi: "La vaccination de la mère protège aussi le nouveau-né." },
   { id: "mental", nom: "Santé mentale après la naissance", court: "Bien-être mental", pourquoi: "Fatigue, tristesse ou anxiété après la naissance sont fréquentes. En parler permet d'être soutenue.", sensible: true },
   { id: "col", nom: "Cancer du col de l'utérus", court: "Cancer du col", pourquoi: "Le dépistage permet de repérer tôt des lésions qui se soignent bien." },
+  { id: "pf", nom: "Espacement des naissances", court: "Espacement des naissances", pourquoi: "Attendre au moins deux ans avant une nouvelle grossesse protège la santé de la mère et du bébé. La sage-femme présente les méthodes ; la femme choisit librement.", sensible: true },
 ];
 
 export const ACTIONS: ActionPrevention[] = [
@@ -47,6 +48,7 @@ export const ACTIONS: ActionPrevention[] = [
   { id: "vat", programme: "tetanos", libelle: "Vaccination antitétanique", echeance: { phase: "grossesse", sa: 0 } },
   { id: "bienetre", programme: "mental", libelle: "Échange sur le bien-être proposé", echeance: { phase: "postnatal", jours: 10 } },
   { id: "col", programme: "col", libelle: "Dépistage du cancer du col proposé", echeance: { phase: "postnatal", jours: 42 } },
+  { id: "pf_conseil", programme: "pf", libelle: "Conseil en espacement des naissances proposé", echeance: { phase: "postnatal", jours: 42 } },
 ];
 
 export type StatutPrevention = "fait" | "refuse" | "en_retard" | "a_faire" | "plus_tard";
