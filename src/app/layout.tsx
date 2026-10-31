@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Cinzel, Cormorant_Garamond, Montserrat } from "next/font/google";
 import { getLangue } from "@/lib/langue";
 import "./globals.css";
@@ -23,6 +24,8 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html lang={langue} className={`${texte.variable} ${titre.variable} ${marque.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
         {children}
+        {/* Mesure d'audience anonyme, sans cookie (Vercel Web Analytics). */}
+        <Analytics />
       </body>
     </html>
   );
