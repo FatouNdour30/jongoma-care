@@ -1,10 +1,8 @@
 import type { ReactNode } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { Icone, type NomIcone } from "@/components/Icone";
 import { Photo } from "@/components/Photo";
 import { Titre } from "@/components/ui";
-import { EQUIPE, FONDATRICE } from "@/lib/equipe";
 import { getLangue } from "@/lib/langue";
 import { SEUIL_MIN } from "@/lib/opendata";
 import { PHOTOS } from "@/lib/photos";
@@ -37,8 +35,6 @@ const T = {
       { valeur: "5", libelle: "étapes, de l'inscription au postnatal" },
       { valeur: "2", libelle: "langues : wolof et français" },
     ],
-    equipeTitre: "Notre équipe",
-    equipeSous: "Une équipe entièrement féminine, du terrain à la direction, au sein de Jongoma Tech.",
     engagementsTitre: "Nos engagements",
     engagementsSous: "Des règles inscrites dans le code, pas seulement dans une charte.",
     engagements: [
@@ -103,8 +99,6 @@ const T = {
       { valeur: "5", libelle: "stages, from sign-up to postnatal" },
       { valeur: "2", libelle: "languages: Wolof and French" },
     ],
-    equipeTitre: "Our team",
-    equipeSous: "An all-female team, from the field to management, within Jongoma Tech.",
     engagementsTitre: "Our commitments",
     engagementsSous: "Rules written into the code, not just into a charter.",
     engagements: [
@@ -209,29 +203,6 @@ export default async function APropos() {
           ))}
         </dl>
       </div>
-
-      <Section titre={t.equipeTitre} sous={t.equipeSous}>
-        <div className="card flex flex-col gap-5 sm:flex-row sm:items-center">
-          <Image src={FONDATRICE.photo} alt={FONDATRICE.nom} width={160} height={160} className="size-32 shrink-0 rounded-2xl object-cover sm:size-40" />
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-accent">{FONDATRICE.role[langue]}</p>
-            <h3 className="font-display text-2xl font-semibold">{FONDATRICE.nom}</h3>
-            <p className="mt-2 text-sm text-muted">{FONDATRICE.mission[langue]}</p>
-          </div>
-        </div>
-        <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {EQUIPE.map((m) => (
-            <li key={m.nom} className="overflow-hidden rounded-2xl bg-card ring-1 ring-border">
-              <Image src={m.photo} alt={m.nom} width={480} height={480} sizes="(min-width: 1024px) 240px, 50vw" className="aspect-square w-full object-cover" />
-              <div className="p-3">
-                <p className="font-semibold leading-tight">{m.nom}</p>
-                <p className="mt-0.5 text-xs font-semibold uppercase tracking-wide text-brand">{m.role[langue]}</p>
-                <p className="mt-1.5 text-xs text-muted">{m.mission[langue]}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </Section>
 
       <Section titre={t.engagementsTitre} sous={t.engagementsSous}>
         <Cartes cartes={t.engagements} colonnes="sm:grid-cols-2 lg:grid-cols-3" />
