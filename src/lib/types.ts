@@ -188,6 +188,22 @@ export interface Bebe {
   alerteDangerLe?: string;
   // Dernière réponse de la mère sur l'allaitement exclusif (0 à 6 mois), déclarative.
   allaitement?: { date: string; exclusif: boolean };
+  // Sexe, facultatif : seulement pour tracer la courbe de croissance de référence (OMS).
+  sexe?: "F" | "M";
+  // Poids et taille relevés par un professionnel ou recopiés du carnet de santé.
+  mesures?: Mesure[];
+  // Visites à domicile de la référente après la naissance.
+  visites?: { etape: EtapeVisite; date: string; saisiPar: string }[];
+}
+
+export type EtapeVisite = "j3" | "j7" | "s6";
+
+export interface Mesure {
+  date: string;
+  poidsKg?: number;
+  tailleCm?: number;
+  source: "carnet" | "structure";
+  saisiPar: string;
 }
 
 // Vaccination : uniquement le fait qu'elle ait été réalisée ou refusée, d'après le carnet de santé.

@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CourbeCroissance } from "@/components/Croissance";
 import { Ecouter } from "@/components/Ecouter";
+import { Parcours1000 } from "@/components/Parcours1000";
+import { QuestionnaireDanger } from "@/components/QuestionnaireDanger";
 import { Icone, type NomIcone } from "@/components/Icone";
 import { Parler } from "@/components/Parler";
 import { dateLongue, Kpi, Panneau, Vide } from "@/components/pro";
 import { Alerte, Badge, fmt, LIBELLES, tonRdv } from "@/components/ui";
-import { annulerDemande, changerReferente, declarerEtatCivil, majPreferences, repondreAllaitement, repondreOrientation, signalerSigneDanger, supprimerMesDonnees } from "@/lib/actions";
+import { annulerDemande, changerReferente, declarerEtatCivil, demanderAideBebe, majPreferences, repondreAllaitement, repondreOrientation, signalerSigneDanger, supprimerMesDonnees } from "@/lib/actions";
 import { CAPSULES } from "@/lib/contenus";
 import { db } from "@/lib/db";
-import { ageBebe, ALLAITEMENT_JOURS_MAX, conseilDuMoment, ETAT_CIVIL, etatVaccins, LIBELLE_VACCIN, MENTION_A_VALIDER, MENTION_CONSEILS, nomBebe, NUMERO_URGENCE, prochaineEtape, SIGNES_DANGER } from "@/lib/enfants";
+import { ageBebe, ALLAITEMENT_JOURS_MAX, conseilDuMoment, ETAT_CIVIL, etapeParcours, etatVaccins, LIBELLE_VACCIN, MENTION_A_VALIDER, MENTION_CONSEILS, nomBebe, NUMERO_URGENCE, prochaineEtape, SIGNES_DANGER } from "@/lib/enfants";
 import { etatPreventions, PROGRAMMES } from "@/lib/programmes";
 import { datePrevue, diffDays, ETAPES, semainesAmenorrhee, today } from "@/lib/protocol";
 import { exigerRole, getSession } from "@/lib/session";
@@ -68,6 +71,7 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
   const etapeVaccin = bebe ? prochaineEtape(bebe, base) : null;
   const vaccinsFaits = vaccins.filter((e) => e.statut === "fait").length;
   const conseil = bebe ? conseilDuMoment(bebe.dateNaissance, t) : undefined;
+  const consultationsBebe = bebe ? rdvs.filter((r) => r.type === "CPoN" && r.date >= bebe.dateNaissance).reverse() : [];
   const vaccinsEchus = vaccins.filter((e) => e.statut !== "plus_tard").length;
   const preventionsAFaire = preventions.filter((e) => e.statut === "a_faire" || e.statut === "en_retard").length;
   const preventionsFaites = preventions.filter((e) => e.statut === "fait").length;
@@ -108,6 +112,7 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
       {sp.demande === "doublon" && <Alerte ton="orange">Vous avez déjà une demande en cours pour ce besoin auprès de cette structure.</Alerte>}
       {sp.demande === "annulee" && <Alerte>Demande annulée.</Alerte>}
       {sp.enregistre && <Alerte>Préférences enregistrées.</Alerte>}
+      {sp.aide && <Alerte>Votre demande est envoyée : votre référente va vous rappeler.</Alerte>}
       {sp.alerte && <Alerte ton="orange">Votre référente est prévenue et va vous appeler. <strong>N&apos;attendez pas son appel : allez tout de suite au centre de santé</strong>, ou appelez le SAMU au {NUMERO_URGENCE}.</Alerte>}
       {sp.referente === "changee" && <Alerte>Une nouvelle référente vous a été attribuée.</Alerte>}
       {sp.referente === "indisponible" && <Alerte ton="orange">Aucune autre référente n&apos;est disponible dans votre zone pour le moment. La coordinatrice est informée et vous recontactera.</Alerte>}
@@ -214,6 +219,14 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
         </Panneau>
       </div>
 
+      {/* Les 1 000 premiers jours : un parcours continu mère-bébé (masqué en mode discret) */}
+      {!discret && (
+        <Panneau titre="Nos 1 000 premiers jours" sous="De la grossesse aux 2 ans de votre enfant, un accompagnement à chaque étape.">
+          <Parcours1000 actuelle={etapeParcours(b, bebe, t)} />
+          <p className="mt-3 text-xs text-muted">Calendrier et conseils à valider par des professionnels de santé, selon les directives nationales.</p>
+        </Panneau>
+      )}
+
       {/* Jeunes filles : accompagnement adapté (titre neutre en mode discret) */}
       {b.jeuneFille && (
         <Panneau titre={discret ? "Pour vous" : "Espace jeunes filles"} sous={discret ? undefined : "Un accompagnement pensé pour vous."} action={<Ecouter texte={JEUNES_FILLES.map(([t, d]) => `${t}. ${d}`).join(" ")} />}>
@@ -312,6 +325,29 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
                 </ul>
               </details>
 
+              <div className="grid gap-3 lg:grid-cols-2">
+                <div className="rounded-2xl border border-border p-4">
+                  <p className="font-semibold">Croissance</p>
+                  <p className="mb-2 text-xs text-muted">Poids recopié du carnet de santé à chaque consultation.</p>
+                  <CourbeCroissance bebe={bebe} />
+                </div>
+                <div className="rounded-2xl border border-border p-4">
+                  <p className="font-semibold">Consultations de bébé</p>
+                  {consultationsBebe.length ? (
+                    <ul className="mt-2 divide-y divide-border text-sm">
+                      {consultationsBebe.map((r) => (
+                        <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 py-1.5">
+                          <span>{libelle(r.libelle)} <span className="text-xs text-muted">· {fmt(r.date)}</span></span>
+                          <Badge ton={tonRdv(r.statut)}>{LIBELLES.rdv[r.statut]}</Badge>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : <p className="mt-2 text-sm text-muted">Aucune consultation enregistrée pour l&apos;instant.</p>}
+                  {(bebe.visites ?? []).length > 0 && <p className="mt-3 text-sm">Visites à domicile de votre référente : {bebe.visites!.map((v) => fmt(v.date)).join(", ")}.</p>}
+                  <Link href="/femme/structures" className="mt-3 inline-block text-sm text-brand underline">Trouver un centre de santé pour les vaccins</Link>
+                </div>
+              </div>
+
               {conseil && (
                 <div className="rounded-2xl bg-brand-soft/40 p-4">
                   <p className="text-xs font-semibold uppercase tracking-wide text-brand">Conseil du moment · {conseil.periode}</p>
@@ -344,7 +380,8 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
                       <button name="exclusif" value="oui" className="btn-sec btn-sm">Oui</button>
                       <button name="exclusif" value="non" className="btn-sec btn-sm">Non, il boit aussi autre chose</button>
                     </form>
-                    {bebe.allaitement && !bebe.allaitement.exclusif && <p className="mt-2 text-xs text-muted">Votre référente peut vous aider : parlez-en lors de son prochain appel.</p>}
+                    {bebe.allaitement && !bebe.allaitement.exclusif && <p className="mt-2 text-xs text-muted">Votre référente peut vous aider, et vous orienter vers une sage-femme si besoin.</p>}
+                    <form action={demanderAideBebe} className="mt-2"><input type="hidden" name="motif" value="allaitement" /><button className="text-xs text-brand underline">J&apos;ai des difficultés : être rappelée</button></form>
                   </div>
                 )}
               </div>
@@ -354,19 +391,14 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
                 <ul className="mt-2 grid gap-1 text-sm text-red-950 sm:grid-cols-2">
                   {SIGNES_DANGER.map((x) => <li key={x} className="flex gap-2"><span aria-hidden>•</span>{x}</li>)}
                 </ul>
-                <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <Ecouter texte={`Allez tout de suite au centre de santé si votre bébé : ${SIGNES_DANGER.join(". ")}.`} />
-                  {bebe.alerteDangerLe ? (
-                    <span className="text-sm font-semibold text-red-900">Votre référente est prévenue.</span>
-                  ) : (
-                    <form action={signalerSigneDanger}><button className="btn btn-sm !bg-red-700 hover:!bg-red-800">Je vois un de ces signes : prévenir ma référente</button></form>
-                  )}
-                  <span className="text-xs text-red-900">SAMU : {NUMERO_URGENCE}</span>
+                <div className="mt-2"><Ecouter texte={`Allez tout de suite au centre de santé si votre bébé : ${SIGNES_DANGER.join(". ")}.`} /></div>
+                <div className="mt-3">
+                  <QuestionnaireDanger signes={SIGNES_DANGER} urgence={NUMERO_URGENCE} alerteEnCours={!!bebe.alerteDangerLe} alerter={signalerSigneDanger} demanderAide={demanderAideBebe} />
                 </div>
                 <p className="mt-2 text-xs text-red-900/80">{MENTION_CONSEILS}</p>
               </div>
 
-              <p className="text-xs text-muted">Seuls sont notés la date de naissance, les vaccins inscrits dans le carnet, la date de déclaration à l&apos;état civil et vos réponses sur l&apos;allaitement. Si vous signalez un signe de danger, seul le fait est noté, jamais lequel. C&apos;est l&apos;agent de santé qui vaccine. {MENTION_A_VALIDER} Le suivi du bébé fait partie de votre accompagnement : vous pouvez le retirer en retirant votre accord.</p>
+              <p className="text-xs text-muted">Seuls sont notés la date de naissance, le sexe si vous l&apos;avez donné, le poids et la taille du carnet, les vaccins, les visites, la date de déclaration à l&apos;état civil et vos réponses sur l&apos;allaitement. Si vous signalez un signe de danger, seul le fait est noté, jamais lequel. C&apos;est l&apos;agent de santé qui vaccine. {MENTION_A_VALIDER} Le suivi du bébé fait partie de votre accompagnement : vous pouvez le retirer en retirant votre accord.</p>
             </div>
           </Panneau>
         </div>

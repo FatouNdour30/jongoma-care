@@ -1,12 +1,12 @@
 // Suivi du nouveau-né : naissance et vaccination de routine.
 // Données minimales : date de naissance, prénom facultatif ; un vaccin = « fait » ou « refusé » + une date,
-// d'après le carnet de santé. Aucune donnée clinique (poids, diagnostic) n'est enregistrée.
+// d'après le carnet de santé ; poids et taille recopiés du carnet. Aucun diagnostic n'est enregistré.
 // Le suivi du bébé fait partie de l'accompagnement auquel la mère a consenti.
 //
 // CALENDRIER INDICATIF, inspiré du Programme élargi de vaccination (PEV) du Sénégal et du calendrier
 // de l'OMS : À VALIDER par le PEV et des professionnels de santé avant tout usage réel.
 import { addDays, diffDays, today } from "./protocol";
-import type { Base, Bebe } from "./types";
+import type { Base, Bebe, Beneficiaire, EtapeVisite } from "./types";
 
 export const MENTION_A_VALIDER = "Calendrier indicatif, à valider par le Programme élargi de vaccination et des professionnels de santé.";
 
@@ -117,6 +117,7 @@ export const CONSEILS_BEBE: { jusqua: number; periode: string; texte: string }[]
   { jusqua: 182, periode: "De 4 à 6 mois", texte: "Encore du lait maternel seulement jusqu'à 6 mois. Préparez avec votre référente le passage aux premières bouillies." },
   { jusqua: 270, periode: "De 6 à 9 mois", texte: "À 6 mois, en plus du lait maternel, donnez de petites bouillies enrichies, plusieurs fois par jour. Demandez au centre de santé la vitamine A selon le calendrier." },
   { jusqua: 456, periode: "De 9 à 15 mois", texte: "Vers 9 mois : vaccins contre la rougeole et la fièvre jaune. Continuez l'allaitement et variez les repas. Lavez-vous les mains avant de préparer à manger." },
+  { jusqua: 730, periode: "De 15 mois à 2 ans", texte: "Deuxième dose contre la rougeole vers 15 mois. Bébé mange au plat familial, en petits morceaux, avec des légumes, des œufs ou du poisson. Continuez l'allaitement si vous le pouvez." },
 ];
 
 export function conseilDuMoment(dateNaissance: string, t = today()) {
@@ -126,3 +127,68 @@ export function conseilDuMoment(dateNaissance: string, t = today()) {
 
 // L'allaitement exclusif ne se demande qu'entre 0 et 6 mois.
 export const ALLAITEMENT_JOURS_MAX = 182;
+
+// ---------- Les 1 000 premiers jours : un parcours continu mère-bébé ----------
+export const PARCOURS_1000 = [
+  { id: "grossesse", titre: "Pendant la grossesse", texte: "Consultations prénatales, préparation à la naissance et au suivi du bébé." },
+  { id: "j28", titre: "0 à 28 jours", texte: "Nouveau-né : allaitement, consultations postnatales, visites à domicile et signes de danger." },
+  { id: "m6", titre: "1 à 6 mois", texte: "Vaccinations, croissance, allaitement exclusif et accompagnement de la mère." },
+  { id: "m24", titre: "6 à 24 mois", texte: "Alimentation complémentaire, croissance, développement et rappels de vaccins." },
+] as const;
+export const PROMESSE = "We care for her. We care for her baby. We care for their future.";
+
+export function etapeParcours(b: Beneficiaire, bebe?: Bebe, t = today()) {
+  if (!bebe) return b.etape === "postnatal" || b.etape === "cloture" ? "j28" : "grossesse";
+  const j = diffDays(t, bebe.dateNaissance);
+  return j <= 28 ? "j28" : j <= 182 ? "m6" : "m24";
+}
+
+// ---------- Visites à domicile après la naissance (référente communautaire) ----------
+// Repères indicatifs inspirés des recommandations de l'OMS sur les soins postnatals : à valider.
+export const VISITES: { id: EtapeVisite; libelle: string; jours: number }[] = [
+  { id: "j3", libelle: "Visite des 3 premiers jours", jours: 3 },
+  { id: "j7", libelle: "Visite entre 7 et 14 jours", jours: 7 },
+  { id: "s6", libelle: "Visite vers 6 semaines", jours: 42 },
+];
+
+// ---------- Croissance : poids pour l'âge, références OMS ----------
+// Valeurs ARRONDIES des standards de croissance de l'OMS (2006), poids pour l'âge, en kg, de 0 à 24 mois :
+// médiane, -2 et +2 écarts-types. À VÉRIFIER contre les tables officielles avant tout usage réel.
+// La courbe ne pose aucun diagnostic : un point hors de la zone habituelle invite à en parler à un agent de santé.
+export const MOIS_OMS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 18, 21, 24];
+export const POIDS_OMS: Record<"F" | "M", { m2: number[]; med: number[]; p2: number[] }> = {
+  F: {
+    m2: [2.4, 3.2, 3.9, 4.5, 5.0, 5.4, 5.7, 6.0, 6.3, 6.5, 6.7, 6.9, 7.0, 7.6, 8.1, 8.6, 9.0],
+    med: [3.2, 4.2, 5.1, 5.8, 6.4, 6.9, 7.3, 7.6, 7.9, 8.2, 8.5, 8.7, 8.9, 9.6, 10.2, 10.9, 11.5],
+    p2: [4.2, 5.5, 6.6, 7.5, 8.2, 8.8, 9.3, 9.8, 10.2, 10.5, 10.9, 11.2, 11.5, 12.4, 13.2, 14.0, 14.8],
+  },
+  M: {
+    m2: [2.5, 3.4, 4.3, 5.0, 5.6, 6.0, 6.4, 6.7, 6.9, 7.1, 7.4, 7.6, 7.7, 8.3, 8.8, 9.2, 9.7],
+    med: [3.3, 4.5, 5.6, 6.4, 7.0, 7.5, 7.9, 8.3, 8.6, 8.9, 9.2, 9.4, 9.6, 10.3, 10.9, 11.5, 12.2],
+    p2: [4.4, 5.8, 7.1, 8.0, 8.7, 9.3, 9.8, 10.3, 10.7, 11.0, 11.4, 11.7, 12.0, 12.8, 13.7, 14.5, 15.3],
+  },
+};
+export const MENTION_OMS = "Zone habituelle d'après les standards de croissance de l'OMS (valeurs arrondies, à vérifier). Cette courbe ne pose aucun diagnostic.";
+
+// Valeur de référence interpolée à un âge donné (en mois).
+export function referenceOms(sexe: "F" | "M", serie: "m2" | "med" | "p2", mois: number) {
+  const v = POIDS_OMS[sexe][serie];
+  const i = MOIS_OMS.findIndex((m) => m >= mois);
+  if (i === -1) return v[v.length - 1];
+  if (i === 0) return v[0];
+  const k = (mois - MOIS_OMS[i - 1]) / (MOIS_OMS[i] - MOIS_OMS[i - 1]);
+  return v[i - 1] + k * (v[i] - v[i - 1]);
+}
+
+export const moisDepuis = (dateNaissance: string, date: string) => diffDays(date, dateNaissance) / 30.4375;
+
+// Le dernier poids est-il dans la zone habituelle ? Orientation seulement, jamais un diagnostic.
+export function zonePoids(bebe: Bebe): "dans" | "dessous" | "dessus" | null {
+  const m = [...(bebe.mesures ?? [])].filter((x) => x.poidsKg).sort((a, b) => a.date.localeCompare(b.date)).at(-1);
+  if (!m || !bebe.sexe) return null;
+  const mois = moisDepuis(bebe.dateNaissance, m.date);
+  if (mois > 24) return null;
+  if (m.poidsKg! < referenceOms(bebe.sexe, "m2", mois)) return "dessous";
+  if (m.poidsKg! > referenceOms(bebe.sexe, "p2", mois)) return "dessus";
+  return "dans";
+}

@@ -7,7 +7,7 @@ import { db, ecritureTerminee, enregistrer, newId, reinitialiser, synchroniser }
 import { addDays, CALENDRIER_CPN, CALENDRIER_CPON, diffDays, ETAPES, today } from "./protocol";
 import { COOKIE_LANGUE } from "./langue";
 import { ACTIONS } from "./programmes";
-import { ALLAITEMENT_JOURS_MAX, VACCINS } from "./enfants";
+import { ALLAITEMENT_JOURS_MAX, VACCINS, VISITES } from "./enfants";
 import { chiffrerSecret, effacerEchecs, estBloque, normaliserEmail, normaliserTelephone, noterEchec, verifierSecret } from "./auth";
 import { exigerRole, getSession, setSession } from "./session";
 import type { Beneficiaire, Langue, Role, TypeSpecialiste, Zone } from "./types";
@@ -690,28 +690,36 @@ export async function enregistrerNaissance(f: FormData) {
   const date = dateIso(f, "date");
   if (!date || date > today() || diffDays(today(), date) > 400) return;
   const prenom = str(f, "prenom").slice(0, 40) || undefined;
+  const sexe = parmi(f, "sexe", ["F", "M"] as const);
   const bebe = db().bebes.find((x) => x.beneficiaireId === b.id);
-  if (bebe) Object.assign(bebe, { dateNaissance: date, prenom });
-  else db().bebes.push({ id: newId("bb"), beneficiaireId: b.id, prenom, dateNaissance: date, creeLe: today() });
+  if (bebe) Object.assign(bebe, { dateNaissance: date, prenom, sexe });
+  else db().bebes.push({ id: newId("bb"), beneficiaireId: b.id, prenom, sexe, dateNaissance: date, creeLe: today() });
   b.dateAccouchement ??= date;
   enregistrer(`${s.role}:${s.id}`, "naissance_enregistree", b.id);
   revalidatePath(`/personnel/beneficiaire/${b.id}`);
 }
 
-// Un vaccin = fait ou refusé, d'après le carnet de santé ; jamais d'autre information.
-export async function enregistrerVaccin(f: FormData) {
+// Qui peut écrire dans le suivi du bébé : sa référente, la coordination, ou la sage-femme vers qui la mère a accepté d'être orientée.
+async function bebeModifiable(bebeId: string) {
   const s = await exigerRole("referente", "coordinatrice", "specialiste");
   const base = db();
-  const bebe = base.bebes.find((x) => x.id === str(f, "bebeId"));
+  const bebe = base.bebes.find((x) => x.id === bebeId);
   const b = base.beneficiaires.find((x) => x.id === bebe?.beneficiaireId);
-  const vaccinId = str(f, "vaccinId");
-  const statut = parmi(f, "statut", ["fait", "refuse", "annuler"] as const);
-  if (!bebe || !b || !statut || !VACCINS.some((v) => v.id === vaccinId)) return;
+  if (!bebe || !b) return null;
   const autorise =
     s.role === "coordinatrice" ||
     (s.role === "referente" && b.referenteId === s.id) ||
     (s.role === "specialiste" && base.personnel.find((p) => p.id === s.id)?.specialite === "sage-femme" && base.orientations.some((o) => o.beneficiaireId === b.id && o.specialisteId === s.id && o.consentementLe));
-  if (!autorise) return;
+  return autorise ? { s, base, bebe, b } : null;
+}
+
+// Un vaccin = fait ou refusé, d'après le carnet de santé ; jamais d'autre information.
+export async function enregistrerVaccin(f: FormData) {
+  const ok = await bebeModifiable(str(f, "bebeId"));
+  const vaccinId = str(f, "vaccinId");
+  const statut = parmi(f, "statut", ["fait", "refuse", "annuler"] as const);
+  if (!ok || !statut || !VACCINS.some((v) => v.id === vaccinId)) return;
+  const { s, base, bebe, b } = ok;
   base.vaccinations = base.vaccinations.filter((v) => !(v.bebeId === bebe.id && v.vaccinId === vaccinId));
   if (statut !== "annuler") {
     base.vaccinations.push({ id: newId("vx"), bebeId: bebe.id, vaccinId, statut, date: dateIso(f, "date") ?? today(), source: s.role === "specialiste" ? "structure" : "carnet", saisiPar: `${s.role}:${s.id}` });
@@ -768,6 +776,53 @@ export async function repondreAllaitement(f: FormData) {
   bebe.allaitement = { date: today(), exclusif: reponse === "oui" };
   enregistrer(`beneficiaire:${b.id}`, "allaitement_declare", b.id);
   revalidatePath("/femme");
+}
+
+// Poids et taille relevés par un professionnel ou recopiés du carnet de santé.
+export async function enregistrerMesure(f: FormData) {
+  const ok = await bebeModifiable(str(f, "bebeId"));
+  if (!ok) return;
+  const { s, bebe, b } = ok;
+  const date = dateIso(f, "date") ?? today();
+  const poids = Number(str(f, "poids").replace(",", ".")) || undefined;
+  const taille = Number(str(f, "taille").replace(",", ".")) || undefined;
+  if (date > today() || date < bebe.dateNaissance || (!poids && !taille)) return;
+  if ((poids && (poids < 0.5 || poids > 30)) || (taille && (taille < 30 || taille > 120))) return;
+  bebe.mesures = [...(bebe.mesures ?? []).filter((m) => m.date !== date), { date, poidsKg: poids, tailleCm: taille, source: s.role === "specialiste" ? ("structure" as const) : ("carnet" as const), saisiPar: `${s.role}:${s.id}` }].sort((x, y) => x.date.localeCompare(y.date));
+  enregistrer(`${s.role}:${s.id}`, "mesure_bebe", b.id);
+  revalidatePath(`/personnel/beneficiaire/${b.id}`);
+}
+
+export async function supprimerMesure(f: FormData) {
+  const ok = await bebeModifiable(str(f, "bebeId"));
+  if (!ok) return;
+  ok.bebe.mesures = (ok.bebe.mesures ?? []).filter((m) => m.date !== str(f, "date"));
+  enregistrer(`${ok.s.role}:${ok.s.id}`, "mesure_bebe_supprimee", ok.b.id);
+  revalidatePath(`/personnel/beneficiaire/${ok.b.id}`);
+}
+
+// Visite à domicile faite par la référente après la naissance.
+export async function enregistrerVisite(f: FormData) {
+  const { s, b } = await beneficiaireDeLaReferente(str(f, "beneficiaireId"));
+  const bebe = db().bebes.find((x) => x.beneficiaireId === b.id);
+  const etape = parmi(f, "etape", VISITES.map((v) => v.id));
+  const date = dateIso(f, "date") ?? today();
+  if (!bebe || !etape || date > today() || date < bebe.dateNaissance) return;
+  bebe.visites = [...(bebe.visites ?? []).filter((v) => v.etape !== etape), ...(parmi(f, "annuler", ["1"]) ? [] : [{ etape, date, saisiPar: `${s.role}:${s.id}` }])];
+  b.dernierContact = today();
+  enregistrer(`${s.role}:${s.id}`, `visite_${etape}`, b.id);
+  revalidatePath(`/personnel/beneficiaire/${b.id}`);
+}
+
+// La mère demande à être rappelée (difficulté d'allaitement, inquiétude sans signe de danger).
+export async function demanderAideBebe(f: FormData) {
+  const { b } = await bebeDeLaBeneficiaire();
+  const motif = parmi(f, "motif", ["allaitement", "inquietude"] as const) ?? "inquietude";
+  b.rappelDemandeLe = today();
+  enregistrer(`beneficiaire:${b.id}`, `aide_bebe_${motif}`, b.id);
+  await ecritureTerminee();
+  revalidatePath("/femme");
+  redirect("/femme?aide=1#bebe");
 }
 
 // La référente a joint la mère au sujet du signe de danger : l'alerte est levée.

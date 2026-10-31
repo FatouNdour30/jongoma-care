@@ -155,6 +155,34 @@ export default async function Accueil() {
         </div>
       </Section>
 
+      {/* Les 1 000 premiers jours : un parcours continu mère-bébé */}
+      <Section id="mille-jours" surtitre={c.mille.surtitre} titre={c.mille.titre} sous={c.mille.sous}>
+        <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {c.mille.etapes.map((e, i) => (
+            <li key={e.titre} className="card">
+              <span className="font-display text-3xl font-semibold text-accent/60">{i + 1}</span>
+              <h3 className="mt-1 font-semibold">{e.titre}</h3>
+              <p className="mt-1 text-sm text-muted">{e.texte}</p>
+            </li>
+          ))}
+        </ol>
+        <div className="mt-6 overflow-hidden rounded-2xl ring-1 ring-border">
+          <table className="w-full text-sm">
+            <thead className="bg-brand text-left text-white">
+              <tr>{c.mille.double.titres.map((x) => <th key={x} className="px-4 py-2.5 font-semibold">{x}</th>)}</tr>
+            </thead>
+            <tbody className="divide-y divide-border bg-card">
+              {c.mille.double.lignes.map(([m, b]) => <tr key={m}><td className="px-4 py-2">{m}</td><td className="px-4 py-2">{b}</td></tr>)}
+            </tbody>
+          </table>
+        </div>
+        <figure className="mt-8 text-center">
+          <blockquote className="font-display text-2xl font-semibold italic text-brand sm:text-3xl">« {c.mille.promesse} »</blockquote>
+          {c.mille.promesseTraduite && <figcaption className="mt-2 text-sm text-muted">{c.mille.promesseTraduite}</figcaption>}
+        </figure>
+        <p className="mt-4 text-xs text-muted">{c.mille.note}</p>
+      </Section>
+
       {/* Jeunes filles */}
       <Section id="jeunes-filles" surtitre={c.jeunes.surtitre} titre={c.jeunes.titre} sous={c.jeunes.sous}>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

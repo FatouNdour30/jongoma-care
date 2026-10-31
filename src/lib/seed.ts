@@ -1,7 +1,7 @@
 // Jeu de données FICTIF pour la démonstration. Aucune personne ni structure réelle.
 import { addDays, CALENDRIER_CPN, CALENDRIER_CPON, diffDays, today } from "./protocol";
 import { etatPreventions } from "./programmes";
-import { etatVaccins } from "./enfants";
+import { etatVaccins, referenceOms } from "./enfants";
 import type { Base, Bebe, Beneficiaire, Prevention, RendezVous, Structure, Vaccination, Zone } from "./types";
 import { ZONES } from "./types";
 import { creerComptesDemo } from "./comptes-demo";
@@ -215,6 +215,16 @@ export function enfantsDemo(base: Base): Pick<Base, "bebes" | "vaccinations"> {
     const age = diffDays(t, bebe.dateNaissance);
     if (bebes.length % 3 !== 1 && age > 10) bebe.etatCivilLe = addDays(bebe.dateNaissance, Math.min(age, 7 + (bebes.length % 4) * 5));
     if (age <= 182 && bebes.length % 2 === 0) bebe.allaitement = { date: addDays(t, -(bebes.length % 9)), exclusif: bebes.length % 4 !== 2 };
+    // Sexe, poids recopiés du carnet aux consultations, visites à domicile (un bébé sous la zone habituelle, pour la démonstration).
+    const sexe = bebes.length % 2 ? "F" : "M";
+    bebe.sexe = sexe;
+    const facteur = bebes.length === 3 ? 0.8 : 0.94 + (bebes.length % 5) * 0.03;
+    bebe.mesures = [0, 42, 70, 98, 182, 270, 365, 456].filter((j) => j <= age).map((j) => ({ date: addDays(bebe.dateNaissance, j), poidsKg: Math.round(referenceOms(sexe, "med", j / 30.4375) * facteur * 10) / 10, tailleCm: j === 0 ? 49 + (bebes.length % 4) : undefined, source: "carnet" as const, saisiPar: "demo" }));
+    bebe.visites = [
+      ...(age >= 3 ? [{ etape: "j3" as const, date: addDays(bebe.dateNaissance, 3), saisiPar: "demo" }] : []),
+      ...(age >= 10 && bebes.length % 3 !== 0 ? [{ etape: "j7" as const, date: addDays(bebe.dateNaissance, 9), saisiPar: "demo" }] : []),
+      ...(age >= 45 && bebes.length % 2 === 0 ? [{ etape: "s6" as const, date: addDays(bebe.dateNaissance, 43), saisiPar: "demo" }] : []),
+    ];
     bebes.push(bebe);
     for (const e of etatVaccins(bebe, { ...base, bebes, vaccinations: [] }, t)) {
       if (e.statut === "plus_tard" || e.statut === "a_faire") continue;
