@@ -5,10 +5,10 @@ import { Icone, type NomIcone } from "@/components/Icone";
 import { Parler } from "@/components/Parler";
 import { dateLongue, Kpi, Panneau, Vide } from "@/components/pro";
 import { Alerte, Badge, fmt, LIBELLES, tonRdv } from "@/components/ui";
-import { annulerDemande, changerReferente, majPreferences, repondreOrientation, supprimerMesDonnees } from "@/lib/actions";
+import { annulerDemande, changerReferente, declarerEtatCivil, majPreferences, repondreAllaitement, repondreOrientation, signalerSigneDanger, supprimerMesDonnees } from "@/lib/actions";
 import { CAPSULES } from "@/lib/contenus";
 import { db } from "@/lib/db";
-import { ageBebe, etatVaccins, LIBELLE_VACCIN, MENTION_A_VALIDER, nomBebe, prochaineEtape } from "@/lib/enfants";
+import { ageBebe, ALLAITEMENT_JOURS_MAX, conseilDuMoment, ETAT_CIVIL, etatVaccins, LIBELLE_VACCIN, MENTION_A_VALIDER, MENTION_CONSEILS, nomBebe, NUMERO_URGENCE, prochaineEtape, SIGNES_DANGER } from "@/lib/enfants";
 import { etatPreventions, PROGRAMMES } from "@/lib/programmes";
 import { datePrevue, diffDays, ETAPES, semainesAmenorrhee, today } from "@/lib/protocol";
 import { exigerRole, getSession } from "@/lib/session";
@@ -67,6 +67,7 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
   const vaccins = bebe ? etatVaccins(bebe, base) : [];
   const etapeVaccin = bebe ? prochaineEtape(bebe, base) : null;
   const vaccinsFaits = vaccins.filter((e) => e.statut === "fait").length;
+  const conseil = bebe ? conseilDuMoment(bebe.dateNaissance, t) : undefined;
   const vaccinsEchus = vaccins.filter((e) => e.statut !== "plus_tard").length;
   const preventionsAFaire = preventions.filter((e) => e.statut === "a_faire" || e.statut === "en_retard").length;
   const preventionsFaites = preventions.filter((e) => e.statut === "fait").length;
@@ -89,6 +90,8 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
 
   // Ce qui demande une action de sa part, ou mérite son attention.
   const aFaire: { icone: NomIcone; texte: string; detail: string; href: string; urgent?: boolean }[] = [];
+  if (bebe?.alerteDangerLe) aFaire.push({ icone: "telephone", texte: "Votre référente est prévenue", detail: "Si vous n'êtes pas déjà au centre de santé, allez-y maintenant", href: "#bebe", urgent: true });
+  if (bebe && !bebe.etatCivilLe) aFaire.push({ icone: "document", texte: discret ? "Une démarche à faire à la mairie" : "Déclarer la naissance à l'état civil", detail: "L'acte de naissance protège votre enfant", href: "#bebe" });
   if (etapeVaccin?.enRetard) aFaire.push({ icone: "calendrier", texte: "Vaccination de votre bébé en retard", detail: etapeVaccin.vaccins.map((e) => e.vaccin.nom).join(", "), href: "#bebe", urgent: true });
   if (prochain && !prochain.confirmeParStructure) aFaire.push({ icone: "hopital", texte: "Rendez-vous en attente de confirmation", detail: `${libelle(prochain.libelle)} · ${fmt(prochain.date)}`, href: "#calendrier" });
   if (preventionsAFaire) aFaire.push({ icone: "bouclier", texte: `${preventionsAFaire} soin${preventionsAFaire > 1 ? "s" : ""} de prévention à faire`, detail: discret ? "À voir lors de votre prochain rendez-vous" : "Parlez-en à la sage-femme à votre prochaine consultation", href: "#sante" });
@@ -105,6 +108,7 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
       {sp.demande === "doublon" && <Alerte ton="orange">Vous avez déjà une demande en cours pour ce besoin auprès de cette structure.</Alerte>}
       {sp.demande === "annulee" && <Alerte>Demande annulée.</Alerte>}
       {sp.enregistre && <Alerte>Préférences enregistrées.</Alerte>}
+      {sp.alerte && <Alerte ton="orange">Votre référente est prévenue et va vous appeler. <strong>N&apos;attendez pas son appel : allez tout de suite au centre de santé</strong>, ou appelez le SAMU au {NUMERO_URGENCE}.</Alerte>}
       {sp.referente === "changee" && <Alerte>Une nouvelle référente vous a été attribuée.</Alerte>}
       {sp.referente === "indisponible" && <Alerte ton="orange">Aucune autre référente n&apos;est disponible dans votre zone pour le moment. La coordinatrice est informée et vous recontactera.</Alerte>}
       {sp.orientation === "acceptee" && <Alerte>Merci. L&apos;orientation est transmise à la spécialiste, qui vous contactera.</Alerte>}
@@ -307,7 +311,62 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
                   ))}
                 </ul>
               </details>
-              <p className="text-xs text-muted">Seuls la date de naissance et les vaccins inscrits dans le carnet sont notés. C&apos;est l&apos;agent de santé qui vaccine. {MENTION_A_VALIDER} Le suivi du bébé fait partie de votre accompagnement : vous pouvez le retirer en retirant votre accord.</p>
+
+              {conseil && (
+                <div className="rounded-2xl bg-brand-soft/40 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-brand">Conseil du moment · {conseil.periode}</p>
+                  <p className="mt-1 text-sm">{conseil.texte}</p>
+                  <div className="mt-2"><Ecouter texte={conseil.texte} /></div>
+                </div>
+              )}
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl border border-border p-4">
+                  <p className="font-semibold">{discret ? "Démarche à la mairie" : "Déclaration à l'état civil"}</p>
+                  {bebe.etatCivilLe ? (
+                    <p className="mt-1 text-sm text-muted">Faite le {fmt(bebe.etatCivilLe)}. Gardez l&apos;acte de naissance en lieu sûr.</p>
+                  ) : (
+                    <>
+                      <p className="mt-1 text-sm text-muted">{ETAT_CIVIL}</p>
+                      <form action={declarerEtatCivil} className="mt-3 flex flex-wrap items-end gap-2">
+                        <label className="text-xs text-muted">Date<input type="date" name="date" max={t} min={bebe.dateNaissance} defaultValue={t} className="field mt-1 w-auto" /></label>
+                        <button className="btn-sec btn-sm">C&apos;est fait</button>
+                      </form>
+                    </>
+                  )}
+                </div>
+                {diffDays(t, bebe.dateNaissance) <= ALLAITEMENT_JOURS_MAX && (
+                  <div className="rounded-2xl border border-border p-4">
+                    <p className="font-semibold">Allaitement</p>
+                    <p className="mt-1 text-sm text-muted">Jusqu&apos;à 6 mois, le lait maternel suffit à bébé. Ces derniers jours, bébé a-t-il bu seulement votre lait ?</p>
+                    {bebe.allaitement && <p className="mt-1 text-xs text-muted">Votre réponse du {fmt(bebe.allaitement.date)} : {bebe.allaitement.exclusif ? "oui" : "non"}.</p>}
+                    <form action={repondreAllaitement} className="mt-3 flex gap-2">
+                      <button name="exclusif" value="oui" className="btn-sec btn-sm">Oui</button>
+                      <button name="exclusif" value="non" className="btn-sec btn-sm">Non, il boit aussi autre chose</button>
+                    </form>
+                    {bebe.allaitement && !bebe.allaitement.exclusif && <p className="mt-2 text-xs text-muted">Votre référente peut vous aider : parlez-en lors de son prochain appel.</p>}
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-2xl border-2 border-red-200 bg-red-50/60 p-4">
+                <p className="font-semibold text-red-900">Signes de danger : allez tout de suite au centre de santé</p>
+                <ul className="mt-2 grid gap-1 text-sm text-red-950 sm:grid-cols-2">
+                  {SIGNES_DANGER.map((x) => <li key={x} className="flex gap-2"><span aria-hidden>•</span>{x}</li>)}
+                </ul>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <Ecouter texte={`Allez tout de suite au centre de santé si votre bébé : ${SIGNES_DANGER.join(". ")}.`} />
+                  {bebe.alerteDangerLe ? (
+                    <span className="text-sm font-semibold text-red-900">Votre référente est prévenue.</span>
+                  ) : (
+                    <form action={signalerSigneDanger}><button className="btn btn-sm !bg-red-700 hover:!bg-red-800">Je vois un de ces signes : prévenir ma référente</button></form>
+                  )}
+                  <span className="text-xs text-red-900">SAMU : {NUMERO_URGENCE}</span>
+                </div>
+                <p className="mt-2 text-xs text-red-900/80">{MENTION_CONSEILS}</p>
+              </div>
+
+              <p className="text-xs text-muted">Seuls sont notés la date de naissance, les vaccins inscrits dans le carnet, la date de déclaration à l&apos;état civil et vos réponses sur l&apos;allaitement. Si vous signalez un signe de danger, seul le fait est noté, jamais lequel. C&apos;est l&apos;agent de santé qui vaccine. {MENTION_A_VALIDER} Le suivi du bébé fait partie de votre accompagnement : vous pouvez le retirer en retirant votre accord.</p>
             </div>
           </Panneau>
         </div>

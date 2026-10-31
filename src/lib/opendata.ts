@@ -16,6 +16,7 @@ export interface Ligne {
   nouveauNes: number | null;
   bcgATemps: number | null; // en % des bébés de 14 jours et plus
   penta3ATemps: number | null; // en % des bébés de 18 semaines et plus
+  etatCivil: number | null; // en % des bébés d'un mois et plus dont la naissance est déclarée à l'état civil
 }
 
 // Délais retenus pour « à temps » (calendrier indicatif, à valider avec le PEV).
@@ -48,6 +49,7 @@ export function indicateurs(base: Base): { lignes: Ligne[]; total: Ligne; maj: s
       orientationsAbouties: masque(orientations),
       nouveauNes: masque(bebes.length),
       bcgATemps: pct(ageBcg.filter((x) => faitAvant(x.id, "bcg", addDays(x.dateNaissance, BCG_DELAI_JOURS))).length, ageBcg.length),
+      etatCivil: pct(bebes.filter((x) => diffDays(t, x.dateNaissance) >= 30 && x.etatCivilLe).length, bebes.filter((x) => diffDays(t, x.dateNaissance) >= 30).length),
       penta3ATemps: pct(agePenta.filter((x) => faitAvant(x.id, "penta3", addDays(x.dateNaissance, PENTA3_DELAI_JOURS))).length, agePenta.length),
     };
   };
@@ -59,7 +61,7 @@ export function indicateurs(base: Base): { lignes: Ligne[]; total: Ligne; maj: s
 }
 
 export function versCsv(lignes: Ligne[]) {
-  const entete = "zone,inscrites,pct_avec_referente,pct_rdv_honores,pct_continuite_postnatale,orientations_abouties,nouveau_nes,pct_bcg_a_temps,pct_penta3_a_temps";
+  const entete = "zone,inscrites,pct_avec_referente,pct_rdv_honores,pct_continuite_postnatale,orientations_abouties,nouveau_nes,pct_bcg_a_temps,pct_penta3_a_temps,pct_naissances_declarees";
   const v = (x: number | null) => (x === null ? "masque" : String(x));
-  return [entete, ...lignes.map((l) => [l.zone, v(l.inscrites), v(l.avecReferente), v(l.rdvHonores), v(l.continuitePostnatale), v(l.orientationsAbouties), v(l.nouveauNes), v(l.bcgATemps), v(l.penta3ATemps)].join(","))].join("\n");
+  return [entete, ...lignes.map((l) => [l.zone, v(l.inscrites), v(l.avecReferente), v(l.rdvHonores), v(l.continuitePostnatale), v(l.orientationsAbouties), v(l.nouveauNes), v(l.bcgATemps), v(l.penta3ATemps), v(l.etatCivil)].join(","))].join("\n");
 }

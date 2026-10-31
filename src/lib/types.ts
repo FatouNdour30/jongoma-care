@@ -181,6 +181,13 @@ export interface Bebe {
   prenom?: string;
   dateNaissance: string;
   creeLe: string;
+  // Date de la déclaration de naissance à l'état civil (indiquée par la mère ou la référente).
+  etatCivilLe?: string;
+  // Signe de danger signalé par la mère (date et heure) : la référente rappelle, puis lève l'alerte.
+  // Seul le fait qu'un signe a été vu est noté, jamais lequel ni un diagnostic.
+  alerteDangerLe?: string;
+  // Dernière réponse de la mère sur l'allaitement exclusif (0 à 6 mois), déclarative.
+  allaitement?: { date: string; exclusif: boolean };
 }
 
 // Vaccination : uniquement le fait qu'elle ait été réalisée ou refusée, d'après le carnet de santé.

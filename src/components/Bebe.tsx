@@ -1,9 +1,9 @@
 // Suivi du nouveau-né dans le dossier de la mère (espace professionnel) : naissance et vaccinations.
 import { Badge, fmt } from "./ui";
-import { enregistrerNaissance, enregistrerVaccin } from "@/lib/actions";
+import { declarerEtatCivil, enregistrerNaissance, enregistrerVaccin, leverAlerteBebe } from "@/lib/actions";
 import { db } from "@/lib/db";
-import { ageBebe, etatVaccins, LIBELLE_VACCIN, MENTION_A_VALIDER, nomBebe, VACCINS, type StatutVaccin } from "@/lib/enfants";
-import { today } from "@/lib/protocol";
+import { ageBebe, ALLAITEMENT_JOURS_MAX, etatVaccins, LIBELLE_VACCIN, MENTION_A_VALIDER, nomBebe, VACCINS, type StatutVaccin } from "@/lib/enfants";
+import { diffDays, today } from "@/lib/protocol";
 import type { Beneficiaire } from "@/lib/types";
 
 const TON: Record<StatutVaccin, "vert" | "rouge" | "orange" | "gris" | "bleu"> = {
@@ -51,6 +51,35 @@ export function PanneauBebe({ b, modifiable = true }: { b: Beneficiaire; modifia
         <span className="text-xs text-muted">
           Né(e) le {fmt(bebe.dateNaissance)} · {ageBebe(bebe.dateNaissance)} · {faits} sur {echus} vaccin(s) échu(s){retards ? <span className="font-semibold text-red-700"> · {retards} en retard</span> : ""}
         </span>
+      </div>
+      {bebe.alerteDangerLe && (
+        <div className="mb-4 rounded-xl border-2 border-red-300 bg-red-50 p-3 text-sm text-red-950">
+          <p className="font-semibold">Signe de danger signalé par la mère le {fmt(bebe.alerteDangerLe.slice(0, 10))} à {bebe.alerteDangerLe.slice(11, 16)} (UTC)</p>
+          <p className="mt-1">Appelez-la tout de suite. Si elle n&apos;est pas déjà au centre de santé, qu&apos;elle y aille sans attendre ; escaladez si besoin.</p>
+          {modifiable && (
+            <form action={leverAlerteBebe} className="mt-2">
+              <input type="hidden" name="beneficiaireId" value={b.id} />
+              <button className="btn btn-sm">Mère jointe : lever l&apos;alerte</button>
+            </form>
+          )}
+        </div>
+      )}
+      <div className="mb-4 grid gap-2 text-sm sm:grid-cols-2">
+        <div className="rounded-xl border border-border px-3 py-2">
+          <span className="font-medium">État civil : </span>
+          {bebe.etatCivilLe ? <>naissance déclarée le {fmt(bebe.etatCivilLe)}</> : <span className="text-red-700">naissance pas encore déclarée</span>}
+          {modifiable && !bebe.etatCivilLe && (
+            <form action={declarerEtatCivil} className="mt-1 flex items-center gap-1.5">
+              <input type="hidden" name="beneficiaireId" value={b.id} />
+              <input type="date" name="date" max={today()} min={bebe.dateNaissance} defaultValue={today()} className="field w-auto py-1" />
+              <button className="btn-sec btn-sm">Déclarée</button>
+            </form>
+          )}
+        </div>
+        <div className="rounded-xl border border-border px-3 py-2">
+          <span className="font-medium">Allaitement exclusif : </span>
+          {bebe.allaitement ? <>{bebe.allaitement.exclusif ? "oui" : "non"} (déclaré le {fmt(bebe.allaitement.date)})</> : diffDays(today(), bebe.dateNaissance) <= ALLAITEMENT_JOURS_MAX ? "pas encore de réponse" : "plus de 6 mois"}
+        </div>
       </div>
       <p className="mb-4 text-xs text-muted">
         Notez uniquement ce qui figure dans le carnet de santé : vaccin fait (avec sa date) ou refusé. Aucune donnée clinique n&apos;est saisie. Les consultations postnatales mère et bébé figurent dans les rendez-vous. {MENTION_A_VALIDER}

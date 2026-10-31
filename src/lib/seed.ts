@@ -1,5 +1,5 @@
 // Jeu de données FICTIF pour la démonstration. Aucune personne ni structure réelle.
-import { addDays, CALENDRIER_CPN, CALENDRIER_CPON, today } from "./protocol";
+import { addDays, CALENDRIER_CPN, CALENDRIER_CPON, diffDays, today } from "./protocol";
 import { etatPreventions } from "./programmes";
 import { etatVaccins } from "./enfants";
 import type { Base, Bebe, Beneficiaire, Prevention, RendezVous, Structure, Vaccination, Zone } from "./types";
@@ -211,6 +211,10 @@ export function enfantsDemo(base: Base): Pick<Base, "bebes" | "vaccinations"> {
   for (const b of base.beneficiaires) {
     if (b.etape !== "postnatal" || !b.dateAccouchement) continue;
     const bebe: Bebe = { id: `bb${bebes.length + 1}`, beneficiaireId: b.id, dateNaissance: b.dateAccouchement, creeLe: b.dateAccouchement };
+    // Démonstration : environ deux naissances sur trois déclarées à l'état civil, quelques réponses sur l'allaitement.
+    const age = diffDays(t, bebe.dateNaissance);
+    if (bebes.length % 3 !== 1 && age > 10) bebe.etatCivilLe = addDays(bebe.dateNaissance, Math.min(age, 7 + (bebes.length % 4) * 5));
+    if (age <= 182 && bebes.length % 2 === 0) bebe.allaitement = { date: addDays(t, -(bebes.length % 9)), exclusif: bebes.length % 4 !== 2 };
     bebes.push(bebe);
     for (const e of etatVaccins(bebe, { ...base, bebes, vaccinations: [] }, t)) {
       if (e.statut === "plus_tard" || e.statut === "a_faire") continue;

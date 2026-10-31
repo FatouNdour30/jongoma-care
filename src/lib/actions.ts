@@ -7,9 +7,9 @@ import { db, ecritureTerminee, enregistrer, newId, reinitialiser, synchroniser }
 import { addDays, CALENDRIER_CPN, CALENDRIER_CPON, diffDays, ETAPES, today } from "./protocol";
 import { COOKIE_LANGUE } from "./langue";
 import { ACTIONS } from "./programmes";
-import { VACCINS } from "./enfants";
+import { ALLAITEMENT_JOURS_MAX, VACCINS } from "./enfants";
 import { chiffrerSecret, effacerEchecs, estBloque, normaliserEmail, normaliserTelephone, noterEchec, verifierSecret } from "./auth";
-import { exigerRole, setSession } from "./session";
+import { exigerRole, getSession, setSession } from "./session";
 import type { Beneficiaire, Langue, Role, TypeSpecialiste, Zone } from "./types";
 import { ZONES } from "./types";
 
@@ -717,6 +717,68 @@ export async function enregistrerVaccin(f: FormData) {
     base.vaccinations.push({ id: newId("vx"), bebeId: bebe.id, vaccinId, statut, date: dateIso(f, "date") ?? today(), source: s.role === "specialiste" ? "structure" : "carnet", saisiPar: `${s.role}:${s.id}` });
   }
   enregistrer(`${s.role}:${s.id}`, `vaccin_${statut}`, b.id);
+  revalidatePath(`/personnel/beneficiaire/${b.id}`);
+  revalidatePath("/personnel");
+}
+
+// ---------- Bébé : signes de danger, état civil, allaitement ----------
+async function bebeDeLaBeneficiaire() {
+  const s = await exigerRole("beneficiaire");
+  const base = db();
+  const b = base.beneficiaires.find((x) => x.id === s.id);
+  const bebe = base.bebes.find((x) => x.beneficiaireId === s.id);
+  if (!b || !bebe) redirect("/femme");
+  return { b, bebe };
+}
+
+// La mère signale qu'elle voit un signe de danger : la référente est prévenue en urgence.
+// Seul le fait est noté, jamais le signe ni un diagnostic.
+export async function signalerSigneDanger() {
+  const { b, bebe } = await bebeDeLaBeneficiaire();
+  bebe.alerteDangerLe = new Date().toISOString();
+  b.rappelDemandeLe = today();
+  enregistrer(`beneficiaire:${b.id}`, "alerte_bebe", b.id);
+  await ecritureTerminee();
+  revalidatePath("/femme");
+  redirect("/femme?alerte=1#bebe");
+}
+
+export async function declarerEtatCivil(f: FormData) {
+  const s = await getSession();
+  const base = db();
+  let bebe;
+  if (s?.role === "beneficiaire") bebe = (await bebeDeLaBeneficiaire()).bebe;
+  else {
+    const { b } = await beneficiaireDeLaReferente(str(f, "beneficiaireId"));
+    bebe = base.bebes.find((x) => x.beneficiaireId === b.id);
+  }
+  if (!bebe) return;
+  const date = parmi(f, "annuler", ["1"]) ? undefined : (dateIso(f, "date") ?? today());
+  if (date && (date > today() || date < bebe.dateNaissance)) return;
+  bebe.etatCivilLe = date;
+  enregistrer(`${s!.role}:${s!.id}`, date ? "etat_civil_declare" : "etat_civil_annule", bebe.beneficiaireId);
+  revalidatePath("/femme");
+  revalidatePath(`/personnel/beneficiaire/${bebe.beneficiaireId}`);
+}
+
+export async function repondreAllaitement(f: FormData) {
+  const { b, bebe } = await bebeDeLaBeneficiaire();
+  const reponse = parmi(f, "exclusif", ["oui", "non"] as const);
+  if (!reponse || diffDays(today(), bebe.dateNaissance) > ALLAITEMENT_JOURS_MAX) return;
+  bebe.allaitement = { date: today(), exclusif: reponse === "oui" };
+  enregistrer(`beneficiaire:${b.id}`, "allaitement_declare", b.id);
+  revalidatePath("/femme");
+}
+
+// La référente a joint la mère au sujet du signe de danger : l'alerte est levée.
+export async function leverAlerteBebe(f: FormData) {
+  const { s, b } = await beneficiaireDeLaReferente(str(f, "beneficiaireId"));
+  const bebe = db().bebes.find((x) => x.beneficiaireId === b.id);
+  if (!bebe?.alerteDangerLe) return;
+  bebe.alerteDangerLe = undefined;
+  b.dernierContact = today();
+  b.rappelDemandeLe = undefined;
+  enregistrer(`${s.role}:${s.id}`, "alerte_bebe_traitee", b.id);
   revalidatePath(`/personnel/beneficiaire/${b.id}`);
   revalidatePath("/personnel");
 }

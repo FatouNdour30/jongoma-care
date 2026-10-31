@@ -34,6 +34,8 @@ export function notifications(s: Session, base: Base): Notification[] {
     const aVerifier = base.rendezVous.filter((r) => ids.has(r.beneficiaireId) && r.statut === "prevu" && r.date < t).length;
     const postSansRdv = mes.filter((b) => b.etape === "postnatal" && !base.rendezVous.some((r) => r.beneficiaireId === b.id && r.type === "CPoN" && r.statut === "prevu" && r.date >= t)).length;
     const orientAttente = base.orientations.filter((o) => ids.has(o.beneficiaireId) && o.statut === "transmise" && diffDays(t, o.creeLe) > 3).length;
+    const alertesBebe = base.bebes.filter((x) => ids.has(x.beneficiaireId) && x.alerteDangerLe).length;
+    ajouter(alertesBebe, "urgent", `Signe de danger signalé pour ${pluriel(alertesBebe, "bébé")}`, "La mère a vu un signe de danger : appelez-la tout de suite.", "/personnel#liste");
     ajouter(hautes, "urgent", `${pluriel(hautes, "bénéficiaire")} en priorité haute`, "À rappeler aujourd'hui.", "/personnel#appels");
     const rappelsDemandes = mes.filter((b) => b.rappelDemandeLe).length;
     ajouter(rappelsDemandes, "urgent", `${pluriel(rappelsDemandes, "bénéficiaire")} demande${rappelsDemandes > 1 ? "nt" : ""} à être rappelée${rappelsDemandes > 1 ? "s" : ""}`, "Question posée à l'assistant vocal, sans réponse validée : rappelez-la.", "/personnel#liste");
@@ -53,6 +55,8 @@ export function notifications(s: Session, base: Base): Notification[] {
     const signalees = base.structures.filter((x) => x.signalements > 0).length;
     const saturees = base.personnel.filter((p) => p.role === "referente" && actives.filter((b) => b.referenteId === p.id).length / p.capaciteMax > 0.9).length;
     const escalades = base.journal.filter((j) => j.action === "escalade_signe_alerte" && j.date.slice(0, 10) >= addDays(t, -7)).length;
+    const alertesBebe = base.bebes.filter((x) => x.alerteDangerLe && diffDays(t, x.alerteDangerLe.slice(0, 10)) >= 1).length;
+    ajouter(alertesBebe, "urgent", `${pluriel(alertesBebe, "alerte bébé")} non levée${alertesBebe > 1 ? "s" : ""} depuis plus d'un jour`, "Signe de danger signalé par une mère : vérifier que la référente l'a jointe.", "/coordination/affectations");
     ajouter(escalades, "urgent", `${pluriel(escalades, "escalade")} cette semaine`, "Signes d'alerte signalés par des référentes : vérifier la prise en charge.", "/coordination/journal");
     ajouter(sansRef, "urgent", `${pluriel(sansRef, "bénéficiaire")} sans référente`, "Consentantes, en attente d'affectation.", "/coordination/affectations");
     ajouter(comptes, "important", `${pluriel(comptes, "demande")} d'accès à valider`, "Vérifier l'identité et la fonction.", "/coordination/comptes");

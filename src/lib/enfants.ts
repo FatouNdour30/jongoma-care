@@ -87,3 +87,42 @@ export function ageBebe(dateNaissance: string, t = today()) {
 }
 
 export const nomBebe = (b: Bebe) => b.prenom || "Bébé";
+
+// ---------- Signes de danger, état civil, conseils selon l'âge ----------
+// Contenus INDICATIFS, inspirés des signes de danger du nouveau-né de l'OMS (PCIME) : à valider par une
+// sage-femme et le district avant tout usage réel. Ils ne posent aucun diagnostic : ils disent quand aller
+// tout de suite au centre de santé.
+export const MENTION_CONSEILS = "Conseils indicatifs, à valider par une sage-femme. En cas de doute, allez au centre de santé.";
+export const NUMERO_URGENCE = "1515"; // SAMU national du Sénégal
+
+export const SIGNES_DANGER = [
+  "Ne tète plus ou ne boit plus",
+  "Convulsions (le corps se raidit ou tremble)",
+  "Respire très vite, ou la poitrine se creuse en respirant",
+  "Corps très chaud, ou au contraire froid",
+  "Très endormi, ne bouge que si on le stimule, ou plus du tout",
+  "Peau ou yeux jaunes, surtout la paume des mains et la plante des pieds",
+  "Cordon rouge, qui coule ou sent mauvais",
+  "Vomit tout ce qu'il boit, ou diarrhée avec du sang",
+];
+
+export const ETAT_CIVIL =
+  "Déclarez la naissance au centre d'état civil le plus tôt possible : l'acte de naissance protège votre enfant et lui sera demandé pour l'école et les examens. Renseignez-vous sur le délai légal auprès de la mairie.";
+
+// Conseils selon l'âge du bébé (en jours) : un seul à la fois, celui de la période en cours.
+export const CONSEILS_BEBE: { jusqua: number; periode: string; texte: string }[] = [
+  { jusqua: 7, periode: "Première semaine", texte: "Mettez bébé au sein dès que possible, puis à la demande, jour et nuit. Gardez le cordon propre et sec, sans rien mettre dessus. Le peau à peau le garde au chaud." },
+  { jusqua: 42, periode: "Jusqu'à 6 semaines", texte: "Le lait maternel suffit : ni eau ni tisane avant 6 mois. Faites dormir bébé sous une moustiquaire imprégnée. À 6 semaines : consultation postnatale pour vous deux et premiers vaccins, apportez le carnet." },
+  { jusqua: 120, periode: "De 6 semaines à 4 mois", texte: "Vaccins à 6, 10 et 14 semaines : apportez toujours le carnet de santé. Continuez l'allaitement exclusif. Parlez et souriez à bébé : il apprend déjà." },
+  { jusqua: 182, periode: "De 4 à 6 mois", texte: "Encore du lait maternel seulement jusqu'à 6 mois. Préparez avec votre référente le passage aux premières bouillies." },
+  { jusqua: 270, periode: "De 6 à 9 mois", texte: "À 6 mois, en plus du lait maternel, donnez de petites bouillies enrichies, plusieurs fois par jour. Demandez au centre de santé la vitamine A selon le calendrier." },
+  { jusqua: 456, periode: "De 9 à 15 mois", texte: "Vers 9 mois : vaccins contre la rougeole et la fièvre jaune. Continuez l'allaitement et variez les repas. Lavez-vous les mains avant de préparer à manger." },
+];
+
+export function conseilDuMoment(dateNaissance: string, t = today()) {
+  const jours = diffDays(t, dateNaissance);
+  return CONSEILS_BEBE.find((c) => jours <= c.jusqua);
+}
+
+// L'allaitement exclusif ne se demande qu'entre 0 et 6 mois.
+export const ALLAITEMENT_JOURS_MAX = 182;
