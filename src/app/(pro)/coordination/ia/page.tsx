@@ -42,6 +42,7 @@ export default async function IaEquite() {
     ...ZONES.map((z) => ({ type: "Zone", nom: z, xs: scores.filter((x) => x.b.zone === z) })),
     { type: "Langue", nom: "Wolof", xs: scores.filter((x) => x.b.langue === "wo") },
     { type: "Langue", nom: "Français", xs: scores.filter((x) => x.b.langue === "fr") },
+    { type: "Âge", nom: "Jeunes filles (< 20 ans)", xs: scores.filter((x) => x.b.jeuneFille) },
   ].map((g) => ({ ...g, haute: partHaute(g.xs), refus: pct(g.xs.filter((x) => x.p.iaRefusee).length, g.xs.length) }));
   const alertes = groupes.filter((g) => Math.abs(g.haute - moyenne) > ECART_ALERTE && g.xs.length >= 5);
 
@@ -143,7 +144,7 @@ export default async function IaEquite() {
               </div>
               <div>
                 <h3 className="text-sm font-semibold">Contrôle d&apos;équité du modèle</h3>
-                <p className="mb-3 text-xs text-muted">Taux d&apos;absence observé et prédit par groupe, sur la période d&apos;évaluation. La zone et la langue ne sont jamais des variables du modèle.</p>
+                <p className="mb-3 text-xs text-muted">Taux d&apos;absence observé et prédit par groupe, sur la période d&apos;évaluation. La zone, la langue et le statut « jeune fille » ne sont jamais des variables du modèle.</p>
                 <table className="w-full text-sm">
                   <thead className="text-left text-xs uppercase tracking-wide text-muted"><tr><th className="py-1 font-semibold">Groupe</th><th className="text-right font-semibold">RDV</th><th className="text-right font-semibold">Observé</th><th className="text-right font-semibold">Prédit</th><th className="text-right font-semibold">AUC</th></tr></thead>
                   <tbody className="divide-y divide-border tabular-nums">

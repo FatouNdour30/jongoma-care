@@ -106,6 +106,7 @@ export function creerBaseDemo(): Base {
       canal: pick(["sms", "appel", "audio"] as const),
       horaireContact: pick(["matin", "après-midi", "soir"]),
       messageDiscret: r() < 0.5,
+      jeuneFille: i % 5 === 2 || undefined, // environ une sur cinq : jeunes filles de moins de 20 ans
       consentements: { service: true, rappels: true, accompagnement: !sansReferente || r() < 0.5, ia: iaOk, dateRecueil: addDays(t, -sa * 5) },
       ddr,
       dateAccouchement: postnatal ? addDays(t, -accouchementIlYa) : undefined,

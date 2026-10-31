@@ -155,6 +155,20 @@ export default async function Accueil() {
         </div>
       </Section>
 
+      {/* Jeunes filles */}
+      <Section id="jeunes-filles" surtitre={c.jeunes.surtitre} titre={c.jeunes.titre} sous={c.jeunes.sous}>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {c.jeunes.items.map((x) => (
+            <div key={x.titre} className="card">
+              <span className="inline-flex rounded-xl bg-brand-soft p-2 text-brand"><Icone nom={x.icone} className="size-5" /></span>
+              <h3 className="mt-3 font-semibold">{x.titre}</h3>
+              <p className="mt-1 text-sm text-muted">{x.texte}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-4 text-xs text-muted">{c.jeunes.note}</p>
+      </Section>
+
       {/* Parcours */}
       <Section surtitre={c.solution.surtitre} titre={c.solution.titre} sous={c.solution.sous}>
         <div className="mb-6 grid gap-4 sm:grid-cols-2">

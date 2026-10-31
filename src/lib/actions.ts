@@ -189,6 +189,7 @@ export async function inscrire(f: FormData) {
     canal: parmi(f, "canal", CANAUX) ?? "sms",
     horaireContact: parmi(f, "horaire", HORAIRES) ?? "matin",
     messageDiscret: coche(f, "discret"),
+    jeuneFille: coche(f, "jeune") || undefined,
     consentements: { service: true, rappels: coche(f, "c_rappels"), accompagnement, ia: coche(f, "c_ia"), dateRecueil: today() },
     ddr,
     distanceKm: Number(str(f, "distance")) || undefined,

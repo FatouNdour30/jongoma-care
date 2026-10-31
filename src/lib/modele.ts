@@ -2,8 +2,8 @@
 // Régression logistique entraînée sur l'historique des rendez-vous, explicable variable par variable.
 // Mode OBSERVATION : il tourne à côté du score « règles » sans rien décider ; ses avis servent à
 // comparer les deux approches avant toute mise en service, après validation humaine.
-// Exclus des variables : zone, langue, âge, santé mentale, protection, contenu clinique. La zone et
-// la langue servent uniquement au contrôle d'équité. Les bénéficiaires opposées à l'IA sont exclues
+// Exclus des variables : zone, langue, âge, santé mentale, protection, contenu clinique. La zone, la
+// langue et le statut « jeune fille » servent uniquement au contrôle d'équité. Les bénéficiaires opposées à l'IA sont exclues
 // de l'entraînement comme des prédictions.
 import { calculerPriorite } from "./priority";
 import { today } from "./protocol";
@@ -162,6 +162,7 @@ export function evaluer(base: Base): Evaluation | null {
       ...zones.map((z) => groupe("Zone", z, (b) => b.zone === z)),
       groupe("Langue", "Wolof", (b) => b.langue === "wo"),
       groupe("Langue", "Français", (b) => b.langue === "fr"),
+      groupe("Âge", "Jeunes filles (< 20 ans)", (b) => !!b.jeuneFille),
     ],
     observation,
   };

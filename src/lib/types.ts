@@ -38,6 +38,9 @@ export interface Beneficiaire {
   canal: Canal;
   horaireContact: string; // ex. "matin"
   messageDiscret: boolean; // libellé neutre si téléphone partagé
+  // Jeune fille de moins de 20 ans (déclaré par elle-même, sans date de naissance) : accompagnement adapté.
+  // Jamais utilisé par le score ni par le modèle d'IA ; sert seulement à adapter le suivi et au contrôle d'équité.
+  jeuneFille?: boolean;
   consentements: Consentements;
   ddr?: string; // date des dernières règles (facultatif)
   dpaCorrigee?: string; // date prévue corrigée par un professionnel (F-05)

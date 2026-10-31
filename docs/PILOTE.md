@@ -16,6 +16,7 @@ Objectif : vérifier, avec un petit nombre de femmes et dans des conditions rée
 - Avec une association de femmes, une sage-femme ou une structure partenaire.
 - Femmes enceintes ou jeunes mères ; au moins la moitié lisent peu ou parlent surtout wolof.
 - Participation volontaire, sans paiement conditionnant la réponse (un rafraîchissement ou le transport peut être offert).
+- **Jeunes filles** : prévoir un tiers de participantes de moins de 20 ans (adolescentes enceintes ou jeunes mères). Pour l'étape 1, inclure d'abord les 18-19 ans ; les mineures seulement après validation de la procédure de consentement (voir `PROTECTION-DES-DONNEES.md`), avec une animatrice formée et une personne de confiance de leur choix.
 
 ## Fiche de consentement (lue à voix haute, en wolof)
 

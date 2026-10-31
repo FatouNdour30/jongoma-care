@@ -39,3 +39,4 @@ Jongoma Care traite des données de santé, qui sont des **données sensibles**.
 7. **Formation des référentes** : confidentialité, téléphone partagé, signalement des violences vers les services compétents.
 8. **Consentement à l'oral en wolof**, avec une fiche lue et expliquée (voir `PILOTE.md`).
 9. **Consentement distinct pour l'entraînement du modèle d'IA** sur les données du pilote.
+10. **Jeunes filles mineures** : définir avec la CDP, un juriste et les services de protection de l'enfance qui consent pour une mineure (elle-même, un parent, un adulte de confiance), sans que l'exigence d'un parent n'écarte une adolescente du suivi. Le statut « jeune fille » est déclaré par elle-même (aucune date de naissance), ne sert jamais au score ni au modèle d'IA, seulement à adapter l'accompagnement et à contrôler l'équité.

@@ -28,6 +28,13 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const CANAL = { sms: "SMS", appel: "appel", audio: "message audio" } as const;
 
+// Textes neutres : lisibles même sur un téléphone partagé.
+const JEUNES_FILLES = [
+  ["C'est confidentiel", "Votre référente ne parle de vous à personne sans votre accord."],
+  ["Continuer l'école", "Votre référente vous aide à placer vos rendez-vous hors des cours, et à garder ou retrouver votre place à l'école."],
+  ["Vous avez des droits", "Être soignée avec respect, poser toutes vos questions, venir avec une personne de confiance."],
+] as const;
+
 // Quand le rendez-vous a-t-il lieu, en mots simples.
 const dans = (iso: string) => {
   const j = diffDays(iso, today());
@@ -202,6 +209,21 @@ export default async function EspaceFemme({ searchParams }: PageProps<"/femme">)
           )}
         </Panneau>
       </div>
+
+      {/* Jeunes filles : accompagnement adapté (titre neutre en mode discret) */}
+      {b.jeuneFille && (
+        <Panneau titre={discret ? "Pour vous" : "Espace jeunes filles"} sous={discret ? undefined : "Un accompagnement pensé pour vous."} action={<Ecouter texte={JEUNES_FILLES.map(([t, d]) => `${t}. ${d}`).join(" ")} />}>
+          <ul className="grid gap-4 sm:grid-cols-3">
+            {JEUNES_FILLES.map(([t, d]) => (
+              <li key={t} className="rounded-2xl bg-brand-soft/40 p-4">
+                <p className="font-semibold">{t}</p>
+                <p className="mt-1 text-sm text-muted">{d}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-xs text-muted">Une question ? Demandez à être rappelée depuis « Écouter » : votre référente vous répond, en toute confidentialité.</p>
+        </Panneau>
+      )}
 
       {/* Agenda */}
       <div id="calendrier" className="grid scroll-mt-40 lg:scroll-mt-8 gap-5 lg:grid-cols-2">

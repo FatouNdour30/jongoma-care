@@ -55,6 +55,9 @@ const T = {
     moment: "De préférence le",
     moments: [["matin", "matin"], ["après-midi", "après-midi"], ["soir", "soir"]],
     discret1: "Mon téléphone peut être utilisé par d'autres personnes : ",
+    jeune1: "J'ai moins de 20 ans : ",
+    jeune2: "je veux un accompagnement adapté aux jeunes filles",
+    jeune3: "Une référente formée à l'accompagnement des jeunes filles, confidentialité renforcée et aide pour poursuivre l'école. Votre date de naissance n'est pas demandée.",
     discret2: "envoyer des messages discrets",
     e5: ["Votre code secret", "4 chiffres faciles à retenir pour vous, difficiles à deviner. Ne le donnez à personne."],
     code: "Code",
@@ -108,6 +111,9 @@ const T = {
     moment: "Preferably in the",
     moments: [["matin", "morning"], ["après-midi", "afternoon"], ["soir", "evening"]],
     discret1: "My phone may be used by other people: ",
+    jeune1: "I am under 20: ",
+    jeune2: "I want support adapted to young girls",
+    jeune3: "A follow-up agent trained to support young girls, stronger confidentiality and help to stay in school. Your date of birth is not asked.",
     discret2: "send discreet messages",
     e5: ["Your secret code", "4 digits that are easy for you to remember and hard to guess. Never share it."],
     code: "Code",
@@ -246,6 +252,10 @@ export default async function Inscription({ searchParams }: PageProps<"/femme/in
           <label className="flex cursor-pointer gap-3 rounded-xl p-3 text-sm ring-1 ring-border has-[:checked]:bg-brand-soft/30 has-[:checked]:ring-brand/40">
             <input type="checkbox" name="discret" defaultChecked className="mt-0.5 size-5 shrink-0 accent-[var(--brand)]" />
             <span>{t.discret1}<span className="font-medium">{t.discret2}</span></span>
+          </label>
+          <label className="flex cursor-pointer gap-3 rounded-xl p-3 text-sm ring-1 ring-border has-[:checked]:bg-brand-soft/30 has-[:checked]:ring-brand/40">
+            <input type="checkbox" name="jeune" className="mt-0.5 size-5 shrink-0 accent-[var(--brand)]" />
+            <span>{t.jeune1}<span className="font-medium">{t.jeune2}</span><span className="mt-1 block text-xs text-muted">{t.jeune3}</span></span>
           </label>
         </Etape>
 

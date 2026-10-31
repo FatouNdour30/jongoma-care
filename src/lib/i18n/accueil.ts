@@ -86,6 +86,18 @@ const fr = {
       { titre: "Des besoins sensibles cachés", texte: "Santé reproductive, bien-être mental, violences : il faut une discrétion qu'un SMS lisible par tous n'offre pas." },
     ],
   },
+  jeunes: {
+    surtitre: "Les jeunes filles d'abord",
+    titre: "Une place à part pour les jeunes filles",
+    sous: "Les adolescentes enceintes et les très jeunes mères sont souvent les plus seules : peur d'être jugées, école interrompue, peu de moyens et peu d'informations fiables. Jongoma Care leur réserve un accompagnement adapté.",
+    items: [
+      { icone: "cadenas", titre: "Confidentialité renforcée", texte: "Messages discrets, aucun détail sur un téléphone partagé, et une référente qui ne parle d'elle à personne sans son accord." },
+      { icone: "equipe", titre: "Une référente formée", texte: "Des référentes formées à l'écoute des jeunes filles, sans jugement, en wolof et en français." },
+      { icone: "livre", titre: "Rester à l'école", texte: "Rendez-vous placés hors des heures de cours, et aide pour garder ou retrouver sa place à l'école après la naissance." },
+      { icone: "bouclier", titre: "Protection", texte: "En cas de violence ou de mariage forcé : orientation, avec son accord, vers une référente protection et les services compétents." },
+    ] as { icone: NomIcone; titre: string; texte: string }[],
+    note: "Pour les mineures, les règles de consentement seront définies avant le pilote avec la Commission de protection des données personnelles, un juriste et les services de protection de l'enfance.",
+  },
   solution: {
     surtitre: "La solution",
     titre: "Une référente humaine, du début à la fin",
@@ -258,6 +270,18 @@ const en: TexteAccueil = {
       { titre: "Services that are hard to find", texte: "Which facility offers which service, when, and is it reliable? This is not always clear." },
       { titre: "Hidden sensitive needs", texte: "Reproductive health, mental well-being, violence: these require a discretion that an SMS readable by anyone cannot offer." },
     ],
+  },
+  jeunes: {
+    surtitre: "Young girls first",
+    titre: "A dedicated place for young girls",
+    sous: "Pregnant adolescents and very young mothers are often the most alone: fear of judgement, interrupted schooling, little money and little reliable information. Jongoma Care gives them adapted support.",
+    items: [
+      { icone: "cadenas", titre: "Stronger confidentiality", texte: "Discreet messages, no details on a shared phone, and a follow-up agent who tells no one about her without her consent." },
+      { icone: "equipe", titre: "A trained follow-up agent", texte: "Agents trained to listen to young girls without judgement, in Wolof and French." },
+      { icone: "livre", titre: "Staying in school", texte: "Appointments set outside class hours, and help to keep or regain her place at school after the birth." },
+      { icone: "bouclier", titre: "Protection", texte: "In case of violence or forced marriage: referral, with her consent, to a protection officer and the competent services." },
+    ] as { icone: NomIcone; titre: string; texte: string }[],
+    note: "For minors, consent rules will be defined before the pilot with Senegal's data protection authority, a lawyer and child protection services.",
   },
   solution: {
     surtitre: "The solution",
